@@ -1,0 +1,45 @@
+──────────────────────────────────────────────────────────────────────
+AWE: an Algol W compiler
+──────────────────────────────────────────────────────────────────────
+
+Awe is a new compiler for the Algol W language. It is intended to to
+be a correct and complete implementation of the language described in
+the Algol W Language Description, June 1972.
+
+Awe should be able to compile code intended for the System/360 ALGOLW
+and XALGOLW compilers with little or no modification.
+
+Awe uses Gnu C (with its extensions) as an intermediate language.
+It allows Algol W programs to be linked to C object code.
+
+Installion instructions are in the file INSTALL.
+
+The manuals are in the file awe.txt and man pages awe.1 and awe.mk.7.
+
+
+Copyright
+╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
+
+The Awe test suite contains 'parser.alw', a parser generator by
+Hendrik Boom, it remains copyright to its author, but is used here
+with permission.
+
+An Awe example program uses Hans Boehm's Cords library, it is
+copyright to Xerox Corporation, under an open source licence.
+
+Otherwise, Copyright 2012 by Glyn Webster.
+
+Awe is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public and Lesser GNU General
+Public licenses as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version.
+
+Awe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
+
+──────────────────────────────────────────────────────────────────────

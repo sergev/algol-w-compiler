@@ -1,0 +1,26 @@
+COMMENT
+;
+BEGIN
+    RECORD NODE (STRING(10) DATA; REFERENCE(NODE) NEXT);
+
+    PROCEDURE DISPOSE (REFERENCE(NODE) VALUE R);
+        ALGOL "free_algol_record";
+
+    PROCEDURE DISPOSE_OF_LIST (REFERENCE (NODE) VALUE HEAD);
+    BEGIN
+        WHILE HEAD ~= NULL DO
+        BEGIN
+            REFERENCE(NODE) N;
+            N := NEXT(HEAD);
+            DISPOSE(HEAD);
+            HEAD := N
+        END
+    END;
+
+    REFERENCE(NODE) L;
+
+    L := NODE("three", NULL);
+    L := NODE("two", L);
+    L := NODE("one", L);
+    DISPOSE_OF_LIST(L)
+END.

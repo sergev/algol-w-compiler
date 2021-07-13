@@ -1,0 +1,23 @@
+Awe is being distributed with only man page and examples as documentation for now.
+
+This revision of Aw2c to Awe has some minor changes, mostly removal of misfeatures:
+
+ * Closer to the Algol W standard.
+ * Minor bug fixes.
+ * Improved command line. Awe calls gcc for itself.
+ * A general-purpose Makefile is included.
+ * Awe accepts multiple source files, which allows a primitive module system.
+ * "External class" references, for returning pointers from external procedures. (Necessary)
+ * Ocaml source code carefully revised.  (The comments were drivel.)
+ * Manual is gone for now.  (Revising it.)
+ * Variables are now never initialized.  (Dijkstra says no)
+ * Only OS/360 and MTS Algol comments are allowed now.  (Was non-standard)
+ * The procedure call tracing code hooks are gone.  (Wasn't satisfactory)
+ * "Ref" is now never a keyword.  (Non-standard)
+ * There are no mechanisms for mixing C and Algol at the source level.  (Was non-standard) (Wasn't satisfactory)
+ * Only "ALGOL" and "FORTRAN" are valid external procedure references now.  (Was non-standard)
+ * Programs must always be statements now.  (Was non-standard)
+ * "Windows Funpak" distribution is gone.  (Couldn't be linked to a garbage collector)
+ * Records are now allowed as parameters to external procedures.
+
+Glyn Webster  Thursday, Jun 15 2012
