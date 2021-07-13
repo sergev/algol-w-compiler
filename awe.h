@@ -1,4 +1,4 @@
-/* awe.h -- Algol W runtime library 
+/* awe.h -- Algol W runtime library
 
 --
 
@@ -23,7 +23,7 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 #define __AWE_H
 
 
-/* Awe library procedures begin with "_" because they must be in scope everywhere 
+/* Awe library procedures begin with "_" because they must be in scope everywhere
    in the C code for an Algol program. Algol W identifiers cannot begin with "_",
    so the two will never clash. */
 
@@ -35,16 +35,16 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 /* Every C function that implements an action that can cause a runtime error has an _awe_loc argument. */
 
 typedef struct _awe_LOC {
-  const char *file; 
-  int line; 
+  const char *file;
+  int line;
   int column;
 } *_awe_loc;
 
 
-/* _awe_src_<nnn> must be a string variable valid at the point of call for this macro to work. 
+/* _awe_src_<nnn> must be a string variable valid at the point of call for this macro to work.
    The compiler ensures this. */
 
-#define _awe_at(filenum, line, column) (&(struct _awe_LOC){_awe_src_##filenum, line, column}) 
+#define _awe_at(filenum, line, column) (&(struct _awe_LOC){_awe_src_##filenum, line, column})
 
 
 /* A macro for _awe_loc locations, to be used in C functions that implement external procedures. */
@@ -90,11 +90,11 @@ int _awe_env_bool (_awe_loc l, const char *variable, int default_);
 void *_awe_allocate_record(_awe_loc l, int size);
 
 
-/* The compiler initializes all reference variables to point to this dummy location. 
-   Its allows the runtime to tell if a field designator is being called on an 
+/* The compiler initializes all reference variables to point to this dummy location.
+   Its allows the runtime to tell if a field designator is being called on an
    uninitialized reference. */
 
-extern int _awe_you_should_not_pointing_here;  
+extern int _awe_you_should_not_pointing_here;
 #define _awe_uninitialized_reference ((void*)&_awe_you_should_not_pointing_here)
 
 
@@ -112,8 +112,8 @@ extern int _awe_you_should_not_pointing_here;
    regular Algol records. */
 
 struct _awe_any_record {
-    const char *_class; 
-    int _number;          
+    const char *_class;
+    int _number;
 };
 
 #define _awe_class(ref)         (((struct _awe_any_record *)ref)->_class)
@@ -124,7 +124,7 @@ extern int _awe_record_counter;  /* for numbering records */
 /* '_awe_ref_cast' is used in some reference assignments and actual parameters.
    It returns a reference if it refers to a record that belongs in a set of classes,
    otherwise it raises a run-time reference type error.
-   This is only called in places where such an error is possible.  
+   This is only called in places where such an error is possible.
    'classes' is NULL-terminated array of pointers to class names. */
 
 #define _awe_ref_cast(loc, reference, classes...) (_awe_ref_cast_check(loc, reference, (const char *[]){classes, (const char *)0}))
@@ -145,7 +145,7 @@ int _awe_is (void *ref, const char *class);
 
 /* Array descriptors represent multidimensional arrays with non-zero
    lower bounds, and slices taken from such arrays. Arrays and their
-   'descriptors' are allocated on the stack. 
+   'descriptors' are allocated on the stack.
 
    See 'Modern Compiler Design' by Grune, Bal, Jacobs and Langendoen
    for the approach taken here.
@@ -223,7 +223,7 @@ _awe_array_element_pointer ( _awe_loc loc,
                                                                         \
     char _##array##_element_data [array->nelements * array->element_size]; \
     array->element_data = _##array##_element_data;                      \
-    
+
 
 
 /* declare a subarray on the stack */
@@ -319,15 +319,15 @@ _Complex double _awe_cpwr(_awe_loc l, _Complex double x, int n);
 /* STRING(1) is represented by C character rvalues (unsigned char).
 
    Longer Algol W strings are represented by pointers to arrays of characters (_awe_str).
-   '_awe_strs' are NOT null-terminated, their lengths should be known at all times. 
-   Each '_awe_str' has its own array, except the ones representing substring designators, 
+   '_awe_strs' are NOT null-terminated, their lengths should be known at all times.
+   Each '_awe_str' has its own array, except the ones representing substring designators,
    those point into other _awe_str's arrays. */
 
 typedef unsigned char *_awe_str;
 
 
-/* EBCDIC translation tables for the CODE and DECODE standard transfer functions.  
-   The Algol W Description specifies EBCDIC encoding, 
+/* EBCDIC translation tables for the CODE and DECODE standard transfer functions.
+   The Algol W Description specifies EBCDIC encoding,
    but Awe programs use Latin-1 internally, for the sake of sanity. */
 
 extern unsigned char _awe_ebcdic_of_latin1 [256];
@@ -340,7 +340,7 @@ extern unsigned char _awe_latin1_of_ebcdic [256];
 
 extern unsigned char _awe_return_string [256];
 
-/* Copy a styring into the buffer, and return a pointer to the buffer. 
+/* Copy a styring into the buffer, and return a pointer to the buffer.
    External procedures must call this to return string values. */
 
 _awe_str _awe_string (_awe_str src, int srclen);
@@ -406,7 +406,7 @@ int odd_(int i);
 unsigned int bitstring(int i);
 
 int number(unsigned int bits);
- 
+
 int decode (unsigned char s);
 unsigned char code(int i);
 
@@ -424,11 +424,11 @@ _awe_str longbase10(double r);
 _awe_str intbase10(int r);
 _awe_str intbase16(int r);
 
-int maxinteger;
-double pi;
-double epsilon;
-double longepsilon;
-double maxreal;
+extern int maxinteger;
+extern double pi;
+extern double epsilon;
+extern double longepsilon;
+extern double maxreal;
 
 double _awe_sqrt (_awe_loc, double);
 double _awe_exp (_awe_loc, double);
@@ -455,10 +455,10 @@ extern const char * const _awe_class_0_exception;
 void _awe_init_exceptions (_awe_loc loc);
 
 void *exception( _awe_loc loc,    /* This is a RECORD structure, */
-                 int xcpnoted, 
-                 int xcplimit, 
-                 int xcpaction, 
-                 int xcpmark, 
+                 int xcpnoted,
+                 int xcplimit,
+                 int xcpaction,
+                 int xcpmark,
                  _awe_str  xcpmsg );
 
 int *xcpnoted (_awe_loc loc, void *ref);    /* and these are its field designator functions. */
@@ -490,13 +490,13 @@ void _awe_process_exception (_awe_loc loc, void *condition);
 void _awe_init_aweio (_awe_loc l);
 
 
-/* Shutdown the Input/Output System. This needs to be called at least once at the end of any Algol W program. 
+/* Shutdown the Input/Output System. This needs to be called at least once at the end of any Algol W program.
    (Only the first call will have any effect.) */
 
 void _awe_exit_aweio (_awe_loc l);
 
 
-/* Editing variables. 
+/* Editing variables.
 
    These control the formatting of parameters to WRITE statements. Values over 132 are silently treated as 132.
 
@@ -513,7 +513,7 @@ extern int   r_d;
 extern unsigned char r_format;  /* this is a STRING(1) */
 
 
-/* The editing variables are saved at the start of an standard procedure statement 
+/* The editing variables are saved at the start of an standard procedure statement
    and restored afterwards, see section 7.9.4. */
 
 typedef struct {
@@ -528,16 +528,16 @@ void _awe_Editing_save (_awe_Editing_t* state);
 void _awe_Editing_restore (_awe_Editing_t* state);
 
 
-/* Actions for IOCONTROL statement parameters. 
+/* Actions for IOCONTROL statement parameters.
 
-   There will be a runtime error if the page estimate is exceeded by a line or 
-   page break instruction, or if the argument to '_awe_iocontrol' is not a valid 
+   There will be a runtime error if the page estimate is exceeded by a line or
+   page break instruction, or if the argument to '_awe_iocontrol' is not a valid
    IOCONTROL control code. */
 
 void _awe_iocontrol (_awe_loc l, int code);
 
 
-/* Actions for WRITE or WRITEON actual parameters.  
+/* Actions for WRITE or WRITEON actual parameters.
 
    There will be a runtime error if the "page estimate" is exceeded. (See the Awe manual.)  */
 

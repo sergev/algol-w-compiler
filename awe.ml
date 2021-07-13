@@ -57,10 +57,10 @@ let multi_file_lexbuf (sources : string list) : Lexing.lexbuf =
         in
         let channel = ref (open_source first) in
         let remaining = ref rest in
-        let rec lexbuf_reader (buffer : string) (n_requested : int) : int =
+        let rec lexbuf_reader (buffer : bytes) (n_requested : int) : int =
           let n = input !channel buffer 0 n_requested in
-          if n > 0 then 
-            n 
+          if n > 0 then
+            n
           else  (* end of current file *)
             match !remaining with
             | [] -> 0   (* end of last file *)
@@ -79,7 +79,7 @@ let multi_file_lexbuf (sources : string list) : Lexing.lexbuf =
 let run (argv : string array) : int =
   match Unix.fork() with
   | 0   -> (try Unix.execvp argv.(0) argv with _ -> exit 127)
-  | pid -> 
+  | pid ->
       match snd (Unix.waitpid [] pid) with
       | Unix.WEXITED exitcode -> exitcode
       | Unix.WSIGNALED signal
@@ -105,8 +105,8 @@ let compile (sources : string list) (operation : operation_t) (target : string) 
     | Failure message               -> error (lexloc()) ("Bug in the Awe compiler: " ^ message)
   in
 
-  let output_code path code = 
-    try 
+  let output_code path code =
+    try
       let f = open_out path in
       Code.output_code f code;
       close_out f
@@ -114,8 +114,8 @@ let compile (sources : string list) (operation : operation_t) (target : string) 
       fprintf stderr "awe: cannot open %S for output: %s\n" path message ;
       exit 1
   in
-  
-  match operation with 
+
+  match operation with
   | Intermediate | Procedure ->
       output_code target code
   | Compile ->
@@ -138,34 +138,34 @@ let command_line () : string list * operation_t * string =
   let target_set = ref false in
   let source_files = ref [] in
 
-  let target op filename = 
-    if !target_set then 
+  let target op filename =
+    if !target_set then
       raise (Arg.Bad "More than one option flag")
-    else 
-      ( target_set := true ; 
-        operation := op ; 
+    else
+      ( target_set := true ;
+        operation := op ;
         target_filename := filename )
   in
 
   let addfile f = source_files := !source_files @ [f] in
 
-  let rec executable_filename filenames = 
+  let rec executable_filename filenames =
     let lastname = List.hd (List.rev filenames) in
-    try 
+    try
       (Filename.chop_extension lastname) ^ (if windows then ".exe" else "")
-    with 
+    with
       Invalid_argument _ -> raise (Arg.Bad (lastname ^ " has no file extension"))
   in
 
-  let options = 
+  let options =
     [ ("-o", Arg.String (target Compile),       " executable Compile to an executable.");
       ("-c", Arg.String (target Intermediate),  " object.c   Compile to a C intermediate file.");
       ("-p", Arg.String (target Procedure),     " object.c   Separately compile a single Algol procedure.");
       ("-i", Arg.Set Options.initialize_all,    " Initialize all variables.");
-      ("-t", Arg.Set Options.add_tracing_hooks, " Add tracing hooks.") ] 
+      ("-t", Arg.Set Options.add_tracing_hooks, " Add tracing hooks.") ]
   in
 
-  try 
+  try
     Arg.parse options addfile usage ;
     if !source_files = [] then raise (Arg.Bad "No source files") ;
     if not !target_set then target_filename := executable_filename !source_files ;
@@ -176,8 +176,8 @@ let command_line () : string list * operation_t * string =
 
 
 let sources, operation, target = command_line () in
-compile sources operation target 
+compile sources operation target
 ;;
 
 
-(* end *)  
+(* end *)

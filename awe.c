@@ -1,4 +1,4 @@
-/* awe.c -- Awe Algol W runtime library 
+/* awe.c -- Awe Algol W runtime library
 
 This file is part of Awe. Copyright 2012 Glyn Webster.
 
@@ -35,10 +35,6 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 #else
 #include <gc/gc.h>
 #endif
-
-
-int _awe_argc;
-char **_awe_argv;
 
 
 void
@@ -101,7 +97,7 @@ _awe_env_int(_awe_loc l, const char *name, int default_, int min, int max)
   int val;
 
   var = getenv(name);
-  if (!var) 
+  if (!var)
     return default_;
 
   val = strtol (var, &tail, 10);
@@ -118,7 +114,7 @@ _awe_env_bool (_awe_loc l, const char *name, int default_)
   char *var;
 
   var = getenv(name);
-  if (!var) 
+  if (!var)
     return default_;
 
   if(strcasecmp(var, "on") == 0) return 1;
@@ -127,7 +123,7 @@ _awe_env_bool (_awe_loc l, const char *name, int default_)
   if(strcasecmp(var, "1") == 0) return 1;
   if(strcasecmp(var, "yes") == 0) return 1;
   if(strcasecmp(var, "y") == 0) return 1;
-  
+
   if(strcasecmp(var, "off") == 0) return 0;
   if(strcasecmp(var, "0") == 0) return 0;
   if(strcasecmp(var, "false") == 0) return 0;
@@ -166,7 +162,7 @@ _awe_allocate_record(_awe_loc l, int size)
 
 
 int
-_awe_is (void *ref, const char *class) 
+_awe_is (void *ref, const char *class)
 {
   return ref && _awe_class(ref) == class;  /* i.e. pointer is not NULL and points to record of right class */
 }
@@ -175,7 +171,7 @@ _awe_is (void *ref, const char *class)
 int _awe_you_should_not_pointing_here;
 
 
-void 
+void
 _awe_ref_field_check (_awe_loc loc, void *ref, const char *class, const char *field_name)
 {
   if (!ref)
@@ -184,7 +180,7 @@ _awe_ref_field_check (_awe_loc loc, void *ref, const char *class, const char *fi
     _awe_error(loc, "reference error: tried to find field %s of an uninitialized reference", field_name);
   if (!_awe_is(ref, class))
     _awe_error( loc, "reference error: tried to find field %s of a REFERENCE(%s)",
-               field_name, 
+               field_name,
                _awe_class(ref) );
 }
 
@@ -197,7 +193,7 @@ _awe_string_of_ref (const char **classes)
 {
   static char s[512];
   const char **pclass;
-  
+
   assert(*classes != 0);
   strcpy(s, "a REFERENCE(");
   strcat(s, *classes);
@@ -218,7 +214,7 @@ _awe_ref_cast_check (_awe_loc loc, void *ref, const char **classes)
   if (ref == NULL)
       return NULL;
   for (pclass = classes; *pclass != 0; ++pclass)
-    if (_awe_class(ref) == *pclass) 
+    if (_awe_class(ref) == *pclass)
       return ref;
   _awe_error( loc, "reference error: %s cannot be made to refer to a '%s' record.",
              _awe_string_of_ref(classes),
@@ -310,7 +306,7 @@ _awe_rdiv(_awe_loc loc, double dividend, double divisor)
   if (fetestexcept(FE_DIVBYZERO)) {
     feclearexcept(FE_DIVBYZERO);
     _awe_process_exception (loc, divzero);
-    if (divzero) 
+    if (divzero)
       switch (*xcpaction(loc, divzero)) {
       case 1: return maxreal;
       case 2: return 0.0;
@@ -334,7 +330,7 @@ _awe_cdiv (_awe_loc loc, _Complex double dividend, _Complex double divisor)
   if (fetestexcept(FE_DIVBYZERO)) {
     feclearexcept(FE_DIVBYZERO);
     _awe_process_exception (loc, divzero);
-    if (divzero) 
+    if (divzero)
       switch (*xcpaction(loc, divzero)) {
       case 1: return maxreal;
       case 2: return 0.0;
@@ -348,7 +344,7 @@ _awe_cdiv (_awe_loc loc, _Complex double dividend, _Complex double divisor)
 }
 
 
-double 
+double
 _awe_fabs(double r)
 {
   return fabs(r);
@@ -361,7 +357,7 @@ _Complex double _awe_cabs(_Complex double x)
 
 
 static
-double 
+double
 rpwr_loop (double x, int n)
 {
   double result = 1.0;
@@ -389,10 +385,10 @@ _awe_rpwr (_awe_loc l, double x, int n)
   else
     return 1.0 / rpwr_loop(x, -n);
 }
-  
+
 
 static
-_Complex double 
+_Complex double
 cpwr_loop (_Complex double x, int n)
 {
   _Complex double result = 1.0;
@@ -420,6 +416,6 @@ _awe_cpwr (_awe_loc l, _Complex double x, int n)
   else
     return 1.0 / cpwr_loop(x, -n);
 }
-  
+
 
 /* end */
