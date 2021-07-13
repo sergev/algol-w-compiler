@@ -68,15 +68,15 @@ operators are
 end operators
 
 optional keywords are
-   "and"    \vee,
-   "or"    \wedge,
+   "and"   \wedge,
+   "or"    \vee,
    "shl"   \uparrow,
    "shr"   \downarrow,
    "div"   \div
 end keywords
 
 optional operators are
-   *    \times,
+#   *    \times,
    **   \uparrow,
    <=   \leq,
    >=   \geq,
@@ -85,11 +85,13 @@ end operators
 
 sequences are
    "comment" Comment Comment ";" Plain,
+   "%" Comment Comment ";" Plain,
+   "%" Comment Comment "%" Plain,
    "@" Comment Comment /$/ Plain,
 
    # String and character constants (Quotes are escaped by doubling them):
    "\"" Plain
-      String
+      Plain
    "\"" Plain
    exceptions are "\"\"" end exceptions
 end sequences

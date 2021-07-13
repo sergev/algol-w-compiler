@@ -23,8 +23,6 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
    We particularly don't want to concatenate tens of thousands of
    increasing large strings as we go. *)
 
-exception TemplateError of string
-
 type t =
   | Empty
   | Id of Table.Id.t
@@ -81,14 +79,14 @@ let emit_code (emit_string : string -> unit)
          if i < String.length template then 
            if template.[i] = '$' then
              match cs with
-             | [] -> raise (TemplateError template)
+             | [] -> failwith ("Code.emit_code: no arguments for '" ^ template ^ "\"")
              | c :: cs' -> ( emit_node c ; loop (i + 1) cs' )
            else
              ( emit_char template.[i] ; loop (i + 1) cs )
          else
            match cs with
            | [] -> ()
-           | _ -> raise (TemplateError template)
+           | _ -> failwith ("Code.emit_code: to many arguments for '" ^ template ^ "\"")
        in
        loop 0 code_list
   in emit_node code

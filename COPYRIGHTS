@@ -9,6 +9,11 @@ with permission.
 An Awe example program uses Hans Boehm's Cords library, it is
 copyright to Xerox Corporation, under an open source licence.
 
+The example program "macro" is derived from the source code
+provided for the book Software Tools in Pascal by Brian W. Kernighan
+and P. J. Plauger, Copyright (C) 1981 by Bell Laboratories, Inc.
+and Whitesmiths Ltd.
+
 The Awe makefile uses OCamlMakefile, copyright Markus Mottl, 
 under the GPL licence.
 

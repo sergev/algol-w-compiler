@@ -21,9 +21,6 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 
 (* Rapidly concatenatable scraps of C code text. *)
 
-(* If this is raised it indicates a bug in the program. *)
-exception TemplateError of string
-
 (* A scrap of C code. *)
 type t 
 
@@ -51,8 +48,7 @@ val add : t -> t -> t
 val add_with_comma : t -> t -> t
 
 (* 'template template scrap_list' makes a C code scrap, replacing '$'
-    signs in 'template' with C code scraps from 'scrap_list' 
-    Raises TemplateError if the number of '$'s and code scraps don't match *)
+    signs in 'template' with C code scraps from 'scrap_list'. *)
 val template : string -> t list -> t
 
 (* 'output_code channel scrap' outputs 'scrap' to 'channel' as a string. *)

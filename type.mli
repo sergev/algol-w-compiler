@@ -36,7 +36,7 @@ type definition_t =
   | Record of Class.t * simple_t list      (* RECORD classes, and their fields. *)
   | Label                                  (* GOTO labels. *)
 
-and procedure_t = simple_t * formal_t list
+and procedure_t = simple_t * formal_t list (* a PROCEDURE has a return type and a list of format parameters *)
 
 and formal_t =
   | By_name         of simple_t
@@ -53,7 +53,8 @@ and simple_t =
   | String of int            (* int is the length *)
   | Reference of ClassSet.t
   | Null                     (* NULL has a special record class compatible with all others. See section 4.5 *)
-  | Statement
+  | Statement                (* FOR and WHILE loops and calls to procedures without return types are "statements".
+                                A statement cannot be used in an assignment. Analogous to C's "void" type. *)
 
 and  domain =
   | Integer
@@ -84,16 +85,16 @@ val assignment_compatible : simple_t -> simple_t -> bool
 
 
 (* 'equal_simple_types t0 t1' returns 'true' are the same simple type. 
-    All references have the same simple type in the eyes of Algol W 
-    until runtime, but references with no classes in common are clearly
-    never equal. *)
+    (note: all references have the same simple type in the eyes of Algol W 
+    until runtime, but references with no classes in common will never
+    be compatible, so Awe disallows those at compile time. *)
 
 val equal_simple_types : simple_t -> simple_t -> bool
 
 
-(* 'equal_procedure_types p0 p1' returns 'true' if two procedures
-    have the type. Their return types and all their formal parameter
-    types must match by 'equal_simple_types' rules. *)
+(* 'equal_procedure_types p0 p1' returns 'true' if two procedures have
+    the type. Their return types and formal parameter types must match
+    up according to the 'equal_simple_types' rules. *)
 
 val equal_procedure_types : procedure_t -> procedure_t -> bool
 

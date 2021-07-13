@@ -47,7 +47,7 @@ module Id = struct
   let string2id : (string, int) Hashtbl.t = Hashtbl.create 83
 
   let create (str : string) : t =
-    let str = String.lowercase str in
+    let str = String.lowercase_ascii str in
     let str = if (Hashtbl.mem gnuc_keywords str) then (str ^ "_") else str in
     try
       Hashtbl.find string2id str

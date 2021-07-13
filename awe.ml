@@ -43,13 +43,13 @@ let multi_file_lexbuf (sources : string list) : Lexing.lexbuf =
     | [] ->
         let lexbuf = Lexing.from_channel stdin in
         lexbuf.lex_curr_p <- {pos_fname = "<stdin>"; pos_lnum = 0; pos_bol = 0; pos_cnum = 0} ;
-        Location.set_filename "<stdin>" ;
+        Location.set_source "<stdin>";
         lexbuf
     | first :: rest ->
         let lexbuf = ref (Lexing.from_string "") in  (* dummy *)
         let open_source path =
           !lexbuf.lex_curr_p <- {pos_fname = path; pos_lnum = 0; pos_bol = 0; pos_cnum = 0} ;
-          Location.set_filename path ;
+          Location.set_source path;
           try
             open_in path
           with Sys_error _ ->
@@ -105,20 +105,22 @@ let compile (sources : string list) (operation : operation_t) (target : string) 
     | Failure message               -> error (lexloc()) ("Bug in the Awe compiler: " ^ message)
   in
 
-  let open_target path = 
+  let output_code path code = 
     try 
-      open_out path
+      let f = open_out path in
+      Code.output_code f code;
+      close_out f
     with Sys_error message ->
       fprintf stderr "awe: cannot open %S for output: %s\n" path message ;
       exit 1
   in
   
   match operation with 
-  | Intermediate | Procedure -> 
-      Code.output_code (open_target target) code
+  | Intermediate | Procedure ->
+      output_code target code
   | Compile ->
       let target_c = target ^ ".awe.c" in
-      Code.output_code (open_target target_c) code ;
+      output_code target_c code ;
       let libs = "-lawe -lm" ^ (if no_gc then "" else " -lgc")  in
       let run_gcc = sprintf "gcc %s %s -o %s" (Filename.quote target_c) libs (Filename.quote target) in
       let exitcode = Sys.command run_gcc in

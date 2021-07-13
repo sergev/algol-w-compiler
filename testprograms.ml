@@ -149,8 +149,8 @@ let run_test filename awe_flags awe_compile awe_messages awe_stdin awe_stdout aw
   let compilation_exitcode = 
     run_commands
       [ "rm -f testme testme-compile testme-messages testme-stderr testme-stdin testme-stdout";
-        sprintf "./awe %s %s.alw -c %s.c 1>testme-messages 2>testme-compile" awe_flags s s;
-        sprintf "gcc -I. -L. '%s.c' -lawe -lgc -lm -o testme 2>>testme-compile" s ]
+        sprintf "./awe %s %s.alw -c %s.awe.c 1>testme-messages 2>testme-compile" awe_flags s s;
+        sprintf "gcc -I. -L. '%s.awe.c' -lawe -lgc -lm -o testme 2>>testme-compile" s ]
   in
   let () = write_whole_file "testme-stdin" awe_stdin in
   let awe_exitcode' = 

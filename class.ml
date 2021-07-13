@@ -19,11 +19,15 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 
 *)
 
-type t = int  (* classes are identified by their index in the global class array. *)
+(* Record classes are identified by their index in a global class
+   array. Awe must give record classes unique C identifiers because C
+   structure definitions are always global.  *)
+
+type t = int
 
 let compare a b = a - b
 
-let exception_class = (Table.Id.create "_awe_0000_exception", "exception")
+let exception_class = (Table.Id.create "_awe_class_0_exception", "exception")
 
 let global_class_array = DynArray.create (Table.Id.dummy, "")
 
@@ -38,7 +42,7 @@ let to_id c     = fst (DynArray.get global_class_array c)
 
 let to_string c = snd (DynArray.get global_class_array c)
 
-let contents () = DynArray.map_to_list global_class_array (fun _ p -> p)
+let contents () = DynArray.to_list global_class_array
 
       
 

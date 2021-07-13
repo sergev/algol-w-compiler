@@ -27,7 +27,7 @@ val create : 'a -> 'a t  (* the parameter is a dummy *)
 val get : 'a t -> int -> 'a
 val add : 'a t -> 'a -> unit
 val length : 'a t -> int
-val map_to_list : 'a t -> (int -> 'a -> 'b) -> 'b list
+val to_list : 'a t -> 'a list
 
 (* end *)
 

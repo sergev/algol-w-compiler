@@ -17,51 +17,62 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public
 License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 
-*)
+ *)
 
-type t = int * int * int
+type source_t = { file_name           : string;
+                  file_number         : int } 
+      
+type t = { source : source_t;
+           line   : int;
+           column : int }
 
-let filenames : string DynArray.t = DynArray.create "" ;;
-let filenumbers : (string, int) Hashtbl.t = Hashtbl.create 20 ;;
-
-let name_of_number number = 
-  DynArray.get filenames number
-
-let number_of_name name = 
-    try Hashtbl.find filenumbers name
-    with Not_found -> DynArray.length filenames - 1
-
-let set_filename new_filename = 
-  DynArray.add filenames new_filename ;
-  Hashtbl.add filenumbers new_filename (DynArray.length filenames - 1)
-
-let create filename line char = 
-  let number = 
-    try
-      Hashtbl.find filenumbers filename
-    with Not_found ->
-      DynArray.add filenames filename ;
-      let n = DynArray.length filenames - 1 in
-      Hashtbl.add filenumbers filename n ;
-      n
-  in
-  (number, line, char)
-
-let of_position position = 
-  let file = 
-    if position.Lexing.pos_fname <> "" then position.Lexing.pos_fname
-    else name_of_number (DynArray.length filenames - 1)  (* last set_filename name *)
-  in
-  let line = position.Lexing.pos_lnum in
-  let char = position.Lexing.pos_cnum - position.Lexing.pos_bol in
-  create file line char
-
-let filename (n, _, _) = name_of_number n
-let file_number (n, _, _) = n
-let line (_, n, _) = n
-let column (_, _, n) = n
+let filename loc     = loc.source.file_name
+let file_number loc  = loc.source.file_number
+let line loc         = loc.line
+let column loc       = loc.column
     
 let to_string loc = 
   Printf.sprintf "%s:%i:%i:" (filename loc) (line loc) (column loc + 1)
+
+
+let sources : (string, source_t) Hashtbl.t = Hashtbl.create 20
+
+let source_list : source_t list ref = ref []
+
+  
+let source_files () = List.map (function source -> source.file_name) !source_list
+
+                                          
+let create_source file_name  =
+  try
+    Hashtbl.find sources file_name
+  with Not_found ->
+    let file_number = List.length !source_list in
+    let source = {file_name; file_number} in
+    source_list := !source_list @ [source] ;
+    Hashtbl.add sources file_name source ;
+    source
+                          
+
+let current_source : source_t ref =
+  let stdin_source = create_source "<stdin>" in
+  ref stdin_source
+  
+
+let set_source filename =
+  let source = create_source filename in
+  current_source := source
+                          
+
+let create filename line column =
+  let source = create_source filename in
+  {source; line; column}
+  
+  
+let of_position (position : Lexing.position) : t =
+  let source = !current_source in
+  let line   = position.Lexing.pos_lnum in
+  let column = position.Lexing.pos_cnum - position.Lexing.pos_bol in
+  {source; line; column}
 
 (* end *)

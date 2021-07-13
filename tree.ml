@@ -45,7 +45,7 @@ type t =
   | GOTO of loc * id
   | ASSERT of loc * t
   | Empty of loc
-  | BEGIN of loc * t list * t list
+  | BEGIN of loc * t list * t list * id
   | Label of loc * id
   | Assignment of loc * t * t
   | Identifier of loc * id
@@ -235,15 +235,20 @@ let rec str : t -> string =
     | Empty (_) -> 
         "(*empty*)"    
         
-  | BEGIN (_, ds, ss ) -> 
-      ( match (ds, ss) with
-        | ([], []) -> "BEGIN END" 
-        | ([], _) -> sprintf "BEGIN %s END" (block_body_items ss)
+  | BEGIN (_, ds, ss, id) -> 
+     ( let ends =
+         if id = Table.Id.dummy then "END"
+         else "END " ^ Table.Id.to_string id
+       in
+       match (ds, ss) with
+        | ([], []) -> "BEGIN " ^ ends
+        | ([], _) -> sprintf "BEGIN %s %s" (block_body_items ss) ends
         | (_, _) -> 
             sprintf 
-              "BEGIN %s; %s END" 
+              "BEGIN %s; %s %s" 
               (semicolon_strs ds)
               (block_body_items ss)
+              ends
       )
         
   | INTEGER -> "INTEGER"
@@ -355,7 +360,7 @@ let rec to_loc : t -> Location.t =
   | GOTO (loc, _) -> loc
   | ASSERT (loc, _) -> loc
   | Empty (loc) -> loc
-  | BEGIN (_, _, ss) -> to_loc (last ss)  (* error messages are about the type of the last expression *)
+  | BEGIN (_, _, ss, _) -> to_loc (last ss)  (* error messages are about the type of the last expression *)
   | Label (loc, _) -> loc
   | Assignment (loc, _, _) -> loc
   | Identifier (loc, _) -> loc

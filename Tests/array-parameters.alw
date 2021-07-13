@@ -15,7 +15,7 @@ begin
       i_w := 2;
       for i := 1 until n do
          writeon(A(i));
-   end p;
+   end;
 
    procedure r(integer array A(*,*); integer value m, n);
    begin
@@ -25,7 +25,7 @@ begin
          q(A(i,*), n);
          iocontrol(2)
       end
-   end p;
+   end;
 
 
    procedure break; begin write("*"); iocontrol(2) end;

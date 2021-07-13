@@ -42,7 +42,7 @@ struct exception {     /* This is a RECORD structure. */
 };
 
 
-static const char * const _awe_0000_exception;
+const char * const _awe_class_0_exception = "exception";
 
 void *
 exception ( _awe_loc loc, 
@@ -53,7 +53,7 @@ exception ( _awe_loc loc,
             _awe_str xcpmsg )
 {
   struct exception *ref = (struct exception *)_awe_allocate_record(loc, sizeof(struct exception));
-  ref->_class = _awe_0000_exception;
+  ref->_class = _awe_class_0_exception;
   ref->_number = _awe_record_counter++;
   ref->xcpnoted = xcpnoted;
   ref->xcplimit = xcplimit;
@@ -66,7 +66,7 @@ exception ( _awe_loc loc,
 int *
 xcpnoted (_awe_loc loc, void *ref) 
 {
-  _awe_ref_field_check(loc, ref, _awe_0000_exception, "xcpnoted");
+  _awe_ref_field_check(loc, ref, _awe_class_0_exception, "xcpnoted");
   return &((struct exception *)ref)->xcpnoted;
 }
 
@@ -74,7 +74,7 @@ xcpnoted (_awe_loc loc, void *ref)
 int *
 xcplimit (_awe_loc loc, void *ref)
 {
-  _awe_ref_field_check(loc, ref, _awe_0000_exception, "xcplimit");
+  _awe_ref_field_check(loc, ref, _awe_class_0_exception, "xcplimit");
   return &((struct exception *)ref)->xcplimit;
 }
 
@@ -82,7 +82,7 @@ xcplimit (_awe_loc loc, void *ref)
 int *
 xcpaction (_awe_loc loc, void *ref) 
 {
-  _awe_ref_field_check(loc, ref, _awe_0000_exception, "xcpaction");
+  _awe_ref_field_check(loc, ref, _awe_class_0_exception, "xcpaction");
   return &((struct exception *)ref)->xcpaction;
 }
 
@@ -90,7 +90,7 @@ xcpaction (_awe_loc loc, void *ref)
 int *
 xcpmark (_awe_loc loc, void *ref) 
 {
-  _awe_ref_field_check(loc, ref, _awe_0000_exception, "xcpmark");
+  _awe_ref_field_check(loc, ref, _awe_class_0_exception, "xcpmark");
   return &((struct exception *)ref)->xcpmark;
 }
 
@@ -98,7 +98,7 @@ xcpmark (_awe_loc loc, void *ref)
 _awe_str
 xcpmsg (_awe_loc loc, void *ref) 
 {
-  _awe_ref_field_check(loc, ref, _awe_0000_exception, "xcpmsg");
+  _awe_ref_field_check(loc, ref, _awe_class_0_exception, "xcpmsg");
   return ((struct exception *)ref)->xcpmsg;
 }
 

@@ -11,15 +11,15 @@ You will need a copy of the 'ALGOL W Language Description' by your
 elbow:
 
     A LaTeX-formatted PDF:
-       http://www.jampan.co.nz/~glyn/algolw.pdf
+        http://www.tiddly-pom.com/~glyn/algolw.pdf
     
     A scanned original can be found here:
         http://www.fh-jena.de/~kleine/history/history.html
 
 'The Michigan Terminal System, Volume 16: ALGOL W in MTS' contains a
 good, textbook guide to ALGOL W (but stop reading at page 188, where
-it begins to describe an extensive MTS-dependant I/O system, Awe does
-not implement it.)
+it begins to describe an extensive MTS-dependant I/O system that Awe
+does not implement).
 
     http://www.bitsavers.org/pdf/univOfMichigan/mts/volumes/
 
@@ -34,18 +34,21 @@ Language Description, June 1972', with these exceptions:
 Language:
   • identifiers are case-insensitive;
   • procedure formal parameters must be fully specified;
-  • arrays may have zero elements;
   • LOGICAL values may be compared;
   • modern handing of ambiguous IF/ELSE statements;
+  • arrays may have dimensions of zero width;
+  • compiler directive cards for block comments.
 
 Standard Library:
   • floating-point arithmetic is done according to GCC and glibc rules;
-  • a few of the standard functions have been extended or omitted;
+  • a few of the standard functions have been extended or omitted.
 
 Operating System Interface:
   • the I/O System is reconfigurable, initially set for stream-based I/O;
+  • the I/O System has a second printer, directed to stderr;
   • the character set is ISO 8859-1, with EBCDIC 1047 ordering;
-  • external reference procedures must be written in C.
+  • external reference procedures must be written in C;
+  • Awe source files can be run though the C preprocessor.
 
 These differences should only affect the validity of programs that
 declare procedure formal parameters or rely on an exact representation
@@ -86,7 +89,7 @@ The domains of the functions of analysis will have changed. C's double
 type, used to represent both REAL and LONG REAL, can have a three
 digit exponent.
 
-Functions and conditions too dependent on the System/360 to be
+Functions and conditions too dependent on System/360 to be
 reliably or consistently reimplemented (UNFL, OVFL, INTOVFL, BASE16
 and LONGBASE16) have been omitted.
 
@@ -141,7 +144,7 @@ Formal procedure parameters
 Awe requires require complete specification of formal procedure
 parameters.
 
-Awe will not accept this (correct) program:
+Awe will not accept this correct program:
 
   BEGIN
      PROCEDURE TRI (INTEGER VALUE I);
@@ -243,7 +246,7 @@ Awe allows "empty arrays" to be declared.
    In order to be valid, for every bound pair, the value of the upper
    bound may be no lower than one less than the upper bound. If a
    valid array has any bound pair where the upper bound is one less
-   than the lower bound then it is an empty array.
+   than the lower bound then it is said to be an empty array.
 
 ▸ Replace the second sentence of 6.1.2. Variables, Semantics with this:
 
@@ -275,6 +278,59 @@ Awe allows LOGICAL values to be compared.
 His Awit chess program uses "¬=" as an exclusive-or operator.)
 
 
+Compiler directive cards
+──────────────────────────────────────────────────────────────────────
+
+The ALGOLW compiler allowed "compiler directive cards" for setting
+compiler options and controlling the format of program listings. A
+compiler directive card is an line with an '@' sign in the first
+column, the rest of the line being some compiler-specific command.
+
+Linemarker directive cards are a special case that begin with the
+character '#'. They allow Awe to be used with the C preprocessor.
+
+Awe silently ignores all compiler directives but its own.
+
+
+Block comment directive cards
+╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
+
+Awe recogises two compiler directives: the "@awe_text" card causes
+Awe to ignore all subsequent lines until it sees an "@awe_code"
+directive. These can be used to create block comments that can contain
+semicolons. Use these to comment out code.
+
+
+C preprocessor compatibility
+──────────────────────────────────────────────────────────────────────
+
+Linemarker directives make a compiler change the source file name it
+uses for error messages and sets its line counter to a new value. The
+C preprocessor places linemarkers in its output so that a compiler
+can point you to where the errors actually originate.
+
+Awe recognises linemarker directives in this format:
+
+   ‘#’ 〈space〉 〈integer〉 〈space〉 〈string〉
+
+where the hash must be in the first column of the line, the integer
+stands for the next line number and the double-quoted string is the
+new source file name. The rest of the line is ignored.
+
+The Gnu cpp preprocessor can be made to output Awe-compatible code
+when called like this:
+
+   cpp -ffreestanding -traditional-cpp program.alw.pp > program.alw
+
+Those flags prevent C compiler specific output.
+See https://gcc.gnu.org/onlinedocs/cpp/ for more about cpp.
+
+Note that cpp recognises and removes C style comments not Algol ones,
+so it will be confused if the characters "/*" appear in an Algol-style
+comment.
+
+
+
 Minor syntactic additions
 ──────────────────────────────────────────────────────────────────────
 
@@ -292,6 +348,18 @@ and:
   The symbol '¬=' may be substituted with the symbol '~='.
 
 
+Alternative version of the '|' symbol.
+╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
+
+▸ To section 2.1, Basic Symbols, add:
+
+  '//'
+
+and:
+
+  The symbol '|' may be substituted with the symbol '//'.
+
+
 MTS ALGOL W "brief comments"
 ╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
 
@@ -303,7 +371,26 @@ Brief comments, as described in The Michigan Terminal System, Volume
     which start with percent may also be ended with a semicolon."
 
 The Awe compiler gives a warning when the '% 〈comment〉 ;' form is
-used; it is treacherous.
+used, because it can lead to unexpected results. Consider carefully
+what this attempt at commenting out a line actually does:
+
+    % commented_out; %
+    next_procedure;
+
+The @awe_text and @awe_code compiler directives can be used to
+reliably comment out lines of code.
+
+
+
+Block identifiers
+╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
+
+Algol W allows an identifier to follow the END keyword of a block.
+The identifer has no effect, but is usually used to mark the end of a
+procedure.
+
+If the identifier at the end of the main block of a procedure is not
+the same as the procedure's identifier then Awe will give a warning.
 
 
 
@@ -383,7 +470,7 @@ bytes, using CODE and DECODE to access the elements:
 That will still work for most programs, because Awe's character
 transliteration tables are inverse functions. The exceptions are
 programs that use strings to pass byte arrays to external procedures,
-tn those cases CODE and DECODE can be replaced by non-transliterating
+in those cases CODE and DECODE can be replaced by non-transliterating
 function procedures.  
 
 In the ALGOL W program source, add:
@@ -420,17 +507,18 @@ a syntax error will sometimes be further away than you'd expect.
 
 Awe will test the assignment compatibility of reference values and
 validity of field designators at compile-time whenever possible.
+This does not affect the execution of correct programs.
 
 
 Name Parameters
 ──────────────────────────────────────────────────────────────────────
 
-The Awe compiler will note the places where "call-by-name" parameters
+The Awe compiler will note the places where "Call by Name" parameters
 are declared, very frequently a VALUE parameter is what was desired.
 
 The Awe compiler gives a warning wherever an expression is used as a
-call-by-name actual parameter. See the "Invalid Name Parameters"
-section.
+Call by Name actual parameter. Those often lead to undefined
+behaviour, see 'Invalid Name Parameters' below.
 
 
 
@@ -440,6 +528,24 @@ RUN-TIME BEHAVIOUR
 
 The behaviour of programs compiled by Awe. This is mostly determined
 by the Awe run-time library 'libawe.a'.
+
+
+Name Parameters
+──────────────────────────────────────────────────────────────────────
+
+Awe programs execute valid Call By Name procedure parameters correctly.
+Awe passes Knuth's "Man or Boy" test for Algol compilers.
+
+Invalid Name Parameters 
+╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
+
+When an expression is used as a Name actual parameter, and the
+procedure assigns to the corresponding formal parameter, the execution
+of the procedure is undefined, because there will be an expression on
+both the left and right hand side of an assignment sign (examine
+section 6.7 of the Language Description). An Awe-compiled program's
+behaviour in this situation is to evaluate both expressions and
+continue executing.
 
 
 Run-Time Error Messages
@@ -459,8 +565,8 @@ are counted from zero. The file path is the one that was given to the
 compiler.
 
 C assertion errors always indicate bugs in the Awe run-time library.
-Segmentation faults should only occur in the case of unbounded
-recursion.  (However, if you link to C code you are back on your own.)
+Segmentation faults should only occur in the case of excessively deep
+recursion. (However, if you link to C code you are back on your own.)
 
 
 Miscellaneous errors:
@@ -488,8 +594,7 @@ Array errors
     (Raised when an array is declared, if 〈min〉 is more than 1
      greater than 〈max〉.)
 
-"subscript 〈n〉 of '〈array〉' = 〈i〉, outside the range (〈min〉::〈max〉)"
-"subscript 〈n〉 of '〈array〉' = 〈i〉, of empty array range (〈min〉::〈max〉)"
+"subscript 〈n〉  = 〈i〉, outside the range (〈min〉::〈max〉)"
 
     (Arrays are "empty" if 〈min〉 is 1 greater than 〈max〉.)
 
@@ -525,8 +630,7 @@ I/O System errors
 "Integer too high on line 〈n〉 of 〈file〉"
 "Bits constant too high on line 〈n〉 of 〈file〉"
 "String too long on line 〈n〉 of 〈file〉"
-"Real number overflow on line 〈n〉 of 〈file〉"
-"Real number underflow high on line 〈n〉 of 〈file〉"
+"Real number out of range on line 〈n〉 of 〈file〉"
 
     (Real number underflow/overflow are range errors.)
 
@@ -543,25 +647,6 @@ I/O System errors
 "Expected a true or false value in system variable 〈name〉."
 
      (See the table in the "I/O System" section.)
-
-
-
-Name Parameters
-──────────────────────────────────────────────────────────────────────
-
-Awe executes valid Call By Name parameters correctly. It passes
-Knuth's "Man or Boy" test.
-
-Invalid Name Parameters 
-╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
-
-When an expression is used as a Name actual parameter, and the
-procedure assigns to the corresponding formal parameter, the execution
-of the procedure is undefined, because there will be an expression on
-both the left and right hand side of an assignment sign.
-
-An Awe-compiled program's behaviour in this situation is to evaluate
-both expressions and continue executing.
 
 
 
@@ -585,15 +670,15 @@ for more information.)
 Freeing records on Windows
 ╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴╴
 
-If your program does not allocate records or allocates a fixed number
-of records you will not need the garbage collector.  But if you do,
+If your program does not allocate records, or allocates a fixed number
+of records, then you will not need garbage collection.  But if you do,
 you can create a procedure that calls the C standard library's 'free'
 function, which you can use to explicitly deallocate records.
 
-Place this in the ALGOL W source, replacing X,Y,Z with identifiers for
-the classes of record you wish to free:
+Place this in the ALGOL W source, replacing the list A,B,C with
+identifiers for the classes of record you wish to free:
 
-    PROCEDURE DISPOSE (REFERENCE (X, Y, Z) VALUE R);
+    PROCEDURE DISPOSE (REFERENCE (A,B,C) VALUE R);
           ALGOL "free_algol_record";
 
 And link to this function (using awe.mk):
@@ -614,8 +699,9 @@ And link to this function (using awe.mk):
     #endif
     }
 
-Structures allocated by GC_ALLOC must not be deallocated with 'free'.
-The #ifdef directive makes the function harmless on Unix systems.
+Structures allocated by GC_ALLOC must not be deallocated with 'free',
+so the #ifdef directive is there to make the function harmless on Unix
+systems.
 
 
 Allocation numbers
@@ -643,6 +729,9 @@ The Unix standard output stream represents the printer. Lines from
 standard input represent card reader input records. At the default I/O
 System settings, record lengths are flexible. The character set is
 ISO-8859-1 (Latin1), rather than EBCDIC.
+
+There is a second "printer" for sending messages to the standard error
+stream. Output can be directed there using an extended IOCONTROL code.
 
 Run-time error messages are printed on the standard error stream.
 
@@ -700,6 +789,9 @@ The control codes:
 │       │                           │         │                        │
 │ 40010 │ eject last page = OFF     │ OFF     │ AWE_EJECT_LAST_PAGE    │
 │ 40011 │ eject last page = ON      │         │                        │
+│       │                           │         │                        │
+│ 50000 │ redirect output to stdout │ stdout  │                        │
+│ 50001 │ redirect output to stderr │         │                        │
 
 
 dddd stands for the digits of a numeric setting, where 9999 means unlimited.
@@ -740,6 +832,12 @@ Eject last page
 
     (The correct ALGOL W Language Description behaviour is to eject
     the last page, but a mere line break suits stream output better.)
+
+Redirect output to stderr
+    By default the "printer" outputs to stdout, which will most likely
+    be piped into a file by the program's user. Awe allows the
+    program's output to be temporarily redirected to strerr to print
+    error messages where they can be seen.
 
 
 READ
@@ -842,11 +940,11 @@ conflict with temporary variables inside the main function of the
 ALGOL W program.
 
 (The external reference procedures I've seen in ALGOL W programs have
-been small FORTRAN procedures to handle the programs' operating system
-interfaces. These would have had to have been rewritten in any case,
-so the requirement to rewrite them in C was not an unnecessary
-burden. In theory, I could provide an interface to GCC's Fortran
-front-end, but there has been no call for it yet.)
+been small FORTRAN procedures to make operating system calls.  Those
+would have to rewritten in any case, so the requirement to rewrite
+them in C is not an unnecessary burden. In theory, I could provide an
+interface to GCC's Fortran front-end, but there has been no call for
+it yet.)
 
 
 An example program
@@ -858,13 +956,16 @@ and that procedure is defined by a separately compiled C function.
 The ALGOL W program, 'when.alw':
 
     BEGIN
-       INTEGER ARRAY A (1 :: 3);
-       LOGICAL D;
        PROCEDURE LOCAL_TIME (INTEGER ARRAY HMS(*); LOGICAL RESULT DST);
           ALGOL "localtime_wrapper";
+          
+       INTEGER ARRAY A (1 :: 3);
+       LOGICAL D;
+       
        LOCAL_TIME(A, D);
+       
        FOR I := 1 UNTIL 3 DO WRITEON(A(I));
-       WRITE(IF D THEN ":-)" ELSE ":-(")
+       WRITE(IF D THEN "Summer! :-)" ELSE "Winter. :-(")
     END.
 
 The Makefile:
@@ -881,13 +982,13 @@ The C library, 'timelib.c':
     #include <awe.h>
     #include <time.h>
     #include "when.awe.h"
-    void localtime_wrapper (int *(*hms)(_awe_loc, int), int *dst)
+    void localtime_wrapper (_awe_array *hms, int *dst)
     {
        time_t t = time(NULL);
        struct tm *T = localtime(&t);
-       *hms(_awe_HERE, 1) = T->tm_hour;
-       *hms(_awe_HERE, 2) = T->tm_min;
-       *hms(_awe_HERE, 3) = T->tm_sec;
+       *_awe_array_SUB(_awe_HERE, int, hms, 1) = T->tm_hour;
+       *_awe_array_SUB(_awe_HERE, int, hms, 2) = T->tm_min;
+       *_awe_array_SUB(_awe_HERE, int, hms, 3) = T->tm_sec;
        *dst = T->tm_isdst;
     }
 
@@ -895,20 +996,13 @@ The 'when.awe.h' header file is automatically generated by 'awe.mk',
 it contains prototypes for all the externally referenced procedures in
 'when.alw'.
 
-(The 'hms' argument for 'localtime_wrapper' might look a bit odd to
-you. See the "Formal parameters to procedures" section below.)
-
-
 awe.h
 ──────────────────────────────────────────────────────────────────────
 
-'alw.h' is the header file for Awe's run-time library. It should
+'awe.h' is the header file for Awe's run-time library. It should
 included into separately compiled function source files.  Not every
 definition in it will be useful to you, but some, like the ALGOL W
 string handling functions, certainly will be.
-
-'awe.h' does not include any other C header file, to avoid adding
-extraneous identifiers to an ALGOL W program's "main" function.
 
 
 Simple types
@@ -940,21 +1034,21 @@ INTEGER, BITS
     what we want.
 
 STRING(1)
-    is represented by a C 'unsigned char' lvalue. ISO 8859-1 Latin1
-    character codes range from 0 to 255.
+    is a single character, represented by a C 'unsigned char'
+    lvalue. ISO 8859-1 character codes range from 0 to 255.
 
 STRING(n)
-    simple types where n > 1, are represented by '_awe_str', a pointer
+    string types where n > 1 are represented by '_awe_str', a pointer
     to a unique array of n 'unsigned char' elements. ALGOL W strings
     are not compatible with C strings: they are of a fixed length,
     padded with spaces and are never zero-terminated.  'awe.h'
     contains prototypes for Awe's string handling functions.
 
 REFERENCE
-    all references are translated to 'void*' pointers, but they remain
-    strongly typed in the ALGOL W side of the program. There are
-    caveats to manipulating ALGOL W records, see the "Records" section
-    below.
+    all reference types are translated to 'void*' pointers, but they
+    remain strongly typed in the ALGOL W side of the program. There
+    are caveats to manipulating ALGOL W records, see the "Records"
+    section below.
 
 COMPLEX
     '_Complex double' is GNU C's raw syntax for the complex type.
@@ -975,11 +1069,13 @@ procedure's simple type.
     }
 
 When a string is returned from a function procedure, its array of
-characters must be copied into a special buffer. Use the 'awe.h'
-string-handling function '_awe_str_cast' to do this, it will also
-handle ALGOL W's string padding for you.
+characters must be copied into a special buffer. Use the function
+'_awe_str_cast' to do this, it will also handle ALGOL W's string
+padding for you.
 
     /* STRING(8) PROCEDURE HEX (INTEGER VALUE X); ALGOL "hex"; */
+
+    #include <awe.h>  /* for _awe_str_cast's prototype */
 
     _awe_str hex (int index)
     {
@@ -1000,11 +1096,11 @@ These are C equivalents of ALGOL W formal parameters:
     │ T VALUE x                │ t x                         │
     │ T RESULT x               │ t* x                        │
     │ T VALUE RESULT x         │ t* x                        │
-    │ T x (i.e. Name)          │ t* (*x)()                   │
+    │ T x (i.e. Call by Name)  │ t* (*x)()                   │
     │ PROCEDURE x              │ void (*x)()                 │
     │ T PROCEDURE x            │ t (*x)()                    │
-    │ T ARRAY x (*)            │ t* (*x)(_awe_loc, int)      │
-    │ T ARRAY x (*,*)          │ t* (*x)(_awe_loc, int, int) │ 
+    │ T ARRAY x (*)            │ _awe_array *x               │
+    │ T ARRAY x (*,*)          │ _awe_array *x               │ 
 
     where 'T' is an ALGOL W simple type, 't' is its C equivalent 
     and 't*' is a C pointer to its equivalent.
@@ -1022,12 +1118,12 @@ RESULT, VALUE RESULT
     variables.  Those copies will be assigned back to their variables
     after the function has returned.
 
-Name
+Call by Name
     parameters are represented by pointers to functions that return
     pointers to variables. In an ALGOL W program these functions are
-    called every time their variables are accessed ("call-by-name"),
-    but you are not obliged to do this in your C code. Note that Name
-    functions can have side-effects.
+    called every time their variables are accessed, but you are not
+    obliged to do this in your C code. Note that Name parameters can
+    have side-effects.
 
 PROCEDURE
     parameters are represented by functions that return values, or
@@ -1042,19 +1138,33 @@ PROCEDURE
         void x (int (*y)(unsigned int z));
 
 ARRAY
-    parameters are represented by pointers to functions that return
-    pointers to elements. 
+    parameters are represented by pointers to _awe_array_t, the Awe
+    runtime's stack-based multidimensional array type.
 
-    An ARRAY function takes a source code location ('_awe_loc')
-    argument, followed by a list of integer arguments for its
-    subscripts.  Use the macro '_awe_HERE' for the source code
-    location argument.
+    _awe_array_t structures contain useful information about arrays,
+    for example their number of dimensions and upper and lower bounds
+    of those dimensions. Read awe.h for details.
 
-    Calling an array function with the array's lowest subscripts will
-    yield a pointer to the array's underlying storage. ALGOL W arrays
-    are stored in row-major order.
+    A pointer to an element of an _awe_array can be obtained using the
+    _awe_array_SUB macro:
 
+        _awe_array_SUB(loc, type, array, subscripts...)
 
+    Where:
+        loc           a source location (use the _awe_HERE macro)
+        type          the C type of the array's elements
+        array         pointer to the array
+        subscripts... all further arguments are integer subscripts
+
+    For example, this accesses element x(2,j+1) of the two-dimensional
+    integer array x:
+    
+        *_awe_array_SUB(_awe_HERE, int, x, 2, j+1)
+        
+    Macros can be used to make array access less cumbersome:
+
+        #define X(i,j) *_awe_array_SUB(_awe_HERE, int, x, (i), (j))
+        
 Records
 ──────────────────────────────────────────────────────────────────────
 
@@ -1067,13 +1177,14 @@ This is the C structure corresponding to an ALGOL W record:
     struct record {
         const char *_class;
         int _number;
-        type_1 id_1;
-        ...
-        type_n id_n;
+        〈type 1〉 〈id 1〉;
+        〈type 2〉 〈id 2〉;
+             . . .
+        〈type n〉 〈id n〉;
     }
 
-    where, for each field of the record in order, type_i is the C
-    simple type of the field, and id_i is its field identifier.
+    where, for each field of the record in order, 〈type i〉 is the C
+    simple type of the field, and 〈id i〉 is its field identifier.
 
 '_class' 
    is a pointer to the name of a record's class, which also
@@ -1083,12 +1194,12 @@ This is the C structure corresponding to an ALGOL W record:
     is a unique "allocation number" for the Standard I/O WRITE
     procedure. See the "Writing Reference Values" section above.
 
-An externally referenced procedure cannot allocate new records and
-should never alter a record's '_class' or '_number' fields.
+An externally referenced procedure cannot allocate new ALGOL W records
+and should never alter a record's '_class' or '_number' fields.
 
-An ALGOL W reference parameter is only valid if it designates
-NULL or a pointer to a record allocated by an ALGOL W reference
-expression, so a record should not normally be freed.
+An ALGOL W reference parameter is only valid if it designates NULL or
+a pointer to a record allocated by an ALGOL W reference expression, so
+a record should not normally be freed.
 
 The Awe run-time initializes all reference variables to the value
 '_alw_uninitialized_reference', to allow field designators to give
@@ -1103,7 +1214,7 @@ referenced procedures as INTEGER or BITS values. That will not work on
 64-bit systems, where pointers are larger than 32-bits. There are two
 ways out of this problem:
 
-(1) return indexes into arrays of pointers;
+(1) return handles (indexes into arrays of pointers);
 
 (2) return pointers as references to dummy record classes:
 
@@ -1120,4 +1231,4 @@ ways out of this problem:
 
 
 ──────────────────────────────────────────────────────────────────────
-Glyn Webster, 2012
+Glyn Webster, 2019

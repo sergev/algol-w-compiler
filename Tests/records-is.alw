@@ -10,7 +10,7 @@ begin
    assert(~ r is rec1);
    assert(~ r is rec2);
    assert(~ r is rec3);
-   
+
    r := rec1;
    assert(r ~= null);
    assert(  r is rec1);

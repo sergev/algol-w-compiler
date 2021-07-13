@@ -21,7 +21,7 @@ begin
       for i := first until last do
          total := total + f(g(i));
       total
-   end sum;
+   end sum2;
 
    real procedure c (real procedure a, b (real value x); real value x);
       a(b(x));
@@ -35,7 +35,7 @@ begin
       for i := first until last do
          total := total + c(f, g, i);
       total
-   end sum;
+   end sum3;
 
    write(sum(1, 10, f));
    write(sum(1, 10, g));

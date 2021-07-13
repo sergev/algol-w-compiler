@@ -37,7 +37,8 @@ void
 algolw_readline (void *f, _awe_str line, int *success)
 {
     char *s;
-    int size, len;
+    size_t size;
+    int len;
 
     size = LINE_LENGTH + 2; /* allow for "\n\0" at end of line */
     s = (char *)malloc(size);  

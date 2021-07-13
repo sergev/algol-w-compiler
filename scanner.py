@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 ''' scanner.py -- generates a state machine scanner for the Algol W READ statement
 
 See the Algol W Language Description, section 6.3

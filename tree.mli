@@ -48,7 +48,7 @@ type t =
   | GOTO       of loc * id
   | ASSERT     of loc * t
   | Empty      of loc
-  | BEGIN      of loc * t list * t list     (* declarations, statements and labels *)
+  | BEGIN      of loc * t list * t list * id  (* declarations, statements, labels, closing id *)
 
   | Label     of loc * id  (* Labels in the bodies of blocks. *)
 

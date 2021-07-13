@@ -20,7 +20,7 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 
-(* Record classes need unique global identifiers. This module generates them. *)
+(* Record classes need unique global C identifiers. This module generates them. *)
 
 type t
 

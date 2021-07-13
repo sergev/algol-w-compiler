@@ -23,8 +23,7 @@ BINDIR = $(PREFIX)/bin
 TOOLDIR = $(PREFIX)/share/awe
 MANDIR = $(PREFIX)/share/man/man1
 
-.phony:: default build documentation all install test clean dist
-.phony:: install-program install-manual
+.phony:: build test install clean
 
 default: test
 

@@ -34,12 +34,15 @@ sig
 end
 
 
-(* Global scopes: a stack of nested local scopes.  *)
+(* Global scopes: a stack of nested local scopes, the top of the stack
+   is the innermost scope.  New definitions are placed in the
+   innermost scope only, but all scopes are searched in order when
+   looking up a definition. The innermost scope is searched first. *)
 
 type t = Local.t list
   
 
-(* Raised by 'get' or 'pos' if an identifier is not defined anywhere in the a global scope. *)
+(* Raised by 'get' if an identifier is not defined anywhere in the a global scope. *)
 
 exception Undefined of Table.Id.t
 
@@ -61,7 +64,7 @@ val empty : t
 val push : t -> t
     
 
-(* 'outside scope' returns the scope with the innermost local scope removed.
+(* 'pop scope' returns the scope with the innermost local scope removed.
    Fails if it is applied to the global scope (always a bug.) *)
 
 val pop : t -> t

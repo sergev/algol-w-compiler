@@ -13,6 +13,13 @@ a(b, c)(d | 1)
 a(b,c)(d|e)
          ^Syntax Error
 
+$ // is a synonym for |
+
+a(b,c)(d//1)
+a(b, c)(d | 1)
+
+a(b / c // 1)
+a((b / c) | 1)
 
 $ Empty statements may be actual parameters
 
@@ -27,12 +34,6 @@ a(b, (*empty*))
 
 a(b,,c)
 a(b, (*empty*), c)
-
-a(b|8)
-a(b | 8)
-
-a(b|c)
-    ^Syntax Error
 
 a + b
 (a + b)

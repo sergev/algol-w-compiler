@@ -113,7 +113,7 @@ rule token = parse
 
 (* Reserved words and identifiers. *)
 | ['A'-'Z' 'a'-'z'] ['A'-'Z' '_' 'a'-'z' '0'-'9']* as s
-    { match String.lowercase s with
+    { match String.lowercase_ascii s with
       | "begin" -> on_begin_token () ; add s ; token lexbuf
       | "end"   -> on_end_token () ; add s ; token lexbuf
       | _       -> add s ; token lexbuf

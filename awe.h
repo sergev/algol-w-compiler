@@ -24,7 +24,8 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Awe library procedures begin with "_" because they must be in scope everywhere 
-   in the C code for an Algol program. Algol W identifiers cannot begin with "_". */
+   in the C code for an Algol program. Algol W identifiers cannot begin with "_",
+   so the two will never clash. */
 
 
 /* Entering and exiting the program, runtime messages. - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -40,7 +41,8 @@ typedef struct _awe_LOC {
 } *_awe_loc;
 
 
-/* _awe_src_<nnn> must be a string variable valid at the point of call, so this macro will work. */
+/* _awe_src_<nnn> must be a string variable valid at the point of call for this macro to work. 
+   The compiler ensures this. */
 
 #define _awe_at(filenum, line, column) (&(struct _awe_LOC){_awe_src_##filenum, line, column}) 
 
@@ -50,8 +52,8 @@ typedef struct _awe_LOC {
 #define _awe_HERE (&(struct _awe_LOC){__FILE__, __LINE__, 0})
 
 
-/* The 'main' function will always copy its 'argv' and 'argv' values into these
-   variables, they will make the values available to external procedures. */
+/* The 'main' function copies its 'argc' and 'argv' values into these
+   variables to make them available to external procedures. */
 
 extern int _awe_argc;
 extern char **_awe_argv;
@@ -68,13 +70,13 @@ void _awe_finalize (_awe_loc loc);
 void _awe_error(_awe_loc l, const char *format, ...);
 
 
-/* Issue a run-time error, reporting the Algol W source location. Don't halt. */
+/* Issue a run-time warning, reporting the Algol W source location. Don't halt. */
 
 void _awe_warning(_awe_loc l, const char *format, ...);
 
 
-/* These read environment variables. */
-/* An out-of-range integer or an unrecognizable boolean flag is a runtime error. */
+/* These read environment variables from the operating system. */
+/* An out-of-range integer value or an unrecognizable boolean flag is a runtime error. */
 
 int _awe_env_int  (_awe_loc l, const char *variable, int default_, int max, int min);
 int _awe_env_bool (_awe_loc l, const char *variable, int default_);
@@ -88,7 +90,7 @@ int _awe_env_bool (_awe_loc l, const char *variable, int default_);
 void *_awe_allocate_record(_awe_loc l, int size);
 
 
-/* The compiler initializes all references variables to point at this dummy location. 
+/* The compiler initializes all reference variables to point to this dummy location. 
    Its allows the runtime to tell if a field designator is being called on an 
    uninitialized reference. */
 
@@ -114,13 +116,13 @@ struct _awe_any_record {
     int _number;          
 };
 
-#define _awe_class(ref) (((struct _awe_any_record *)ref)->_class)
+#define _awe_class(ref)         (((struct _awe_any_record *)ref)->_class)
 #define _awe_record_number(ref) (((struct _awe_any_record *)ref)->_number)
 
 extern int _awe_record_counter;  /* for numbering records */
 
 /* '_awe_ref_cast' is used in some reference assignments and actual parameters.
-   It returns a reference if it refers to a record that belongs in 'classes'
+   It returns a reference if it refers to a record that belongs in a set of classes,
    otherwise it raises a run-time reference type error.
    This is only called in places where such an error is possible.  
    'classes' is NULL-terminated array of pointers to class names. */
@@ -141,31 +143,115 @@ int _awe_is (void *ref, const char *class);
 
 /* Arrays. - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* The '_awe_array_bounds_check' macro checks that an array dimension's bounds are valid. */
-/* A lower bound one less than its upper bound is allowed, it creates an empty array. */
+/* Array descriptors represent multidimensional arrays with non-zero
+   lower bounds, and slices taken from such arrays. Arrays and their
+   'descriptors' are allocated on the stack. 
 
-#define _awe_array_bounds_check(a, _awe_src_line, d)\
-    if (_##a##_upb##d - _##a##_lwb##d + 1 < 0) { \
-        _awe_array_bounds_error(_awe_src_line, #a, d, _##a##_lwb##d, _##a##_upb##d);\
-    }
-void _awe_array_bounds_error(_awe_loc l, const char *array, int subscript, int lwb, int upb);
+   See 'Modern Compiler Design' by Grune, Bal, Jacobs and Langendoen
+   for the approach taken here.
+*/
 
-
-/* Array designators use the _awe_array_range_check macro to check 
-   that subscripts are within their dimensions' bounds. */
-/* The gcc compiler flag -D AWE_NO_ARRAY_CHECKS turns off array subscript range checking. */
-
-#ifdef AWE_NO_ARRAY_CHECKS
-#define _awe_array_range_check(a, d)
-#else
-#define _awe_array_range_check(a, d)\
-    if (!(_sub##d >= _##a##_lwb##d && _sub##d <= _##a##_upb##d)) {        \
-        _awe_array_range_error(loc, #a, d, _##a##_lwb##d, _##a##_upb##d, _sub##d);\
-    }
-void _awe_array_range_error(_awe_loc l, const char *array, int subscript, int lwb, int upb, int sub);
-#endif
+typedef struct _awe_array_bound {
+    int lower, upper;
+} _awe_array_bound_t;
 
 
+typedef struct _awe_array {
+    void *element_data;  /* storage for the elements of the array */
+    long  nelements;     /* total number of elements in element_data */
+    long  element_size;  /* the size of one element */
+    int   ndimensions;   /* number of array dimensions */
+    long  total_offset;  /* total of offsets to element at 0 in all dimensions */
+    long *multipliers;   /* number of bytes between each subscript of a dimension */
+    _awe_array_bound_t *bounds;        /* bounds of each dimension */
+} _awe_array_t;
+
+/* Note that for subarrays element_data and nelements are the same as
+   for the base array */
+
+
+typedef struct _awe_array_slicer {
+    _Bool slice;     /* slice along this dimension? */
+    int subscript;   /* subscript of the slice */
+} _awe_array_slicer_t;
+
+
+void
+_awe_array_initialize ( _awe_loc loc,
+                        _awe_array_t *array,
+                        int ndimensions,
+                        _awe_array_bound_t *bounds,
+                        long *multipliers,
+                        long element_size );
+
+
+void
+_awe_subarray_initialize ( _awe_loc loc,
+                        const _awe_array_t *array,
+                        _awe_array_t *subarray,
+                        int subarray_ndimensions,
+                        const _awe_array_slicer_t *slicers,
+                        _awe_array_bound_t *bounds,
+                        long *multipliers );
+
+
+void *
+_awe_array_element_pointer ( _awe_loc loc,
+                             const _awe_array_t *array,
+                             const int *subscripts );
+
+
+/* array subscript, as pointer to element */
+#define _awe_array_SUB(loc, type, array, subscripts...)                 \
+    (type*)_awe_array_element_pointer((loc), (array), (int[]){subscripts})
+
+
+/* declare an array on the stack. */
+#define _awe_array_DECLARE(loc, array, elementsize, ndimensions, bounds_array) \
+    _awe_array_t _##array##_descriptor;                                 \
+    _awe_array_t *array = &_##array##_descriptor;                       \
+                                                                        \
+    const int _##array##_ndimensions = (ndimensions);                   \
+    long _##array##_multipliers [_##array##_ndimensions];               \
+                                                                        \
+    _awe_array_initialize( (loc),                                       \
+                           &_##array##_descriptor,                      \
+                           _##array##_ndimensions,                      \
+                           (bounds_array),                              \
+                           _##array##_multipliers,                      \
+                           (elementsize) );                             \
+                                                                        \
+    char _##array##_element_data [array->nelements * array->element_size]; \
+    array->element_data = _##array##_element_data;                      \
+    
+
+
+/* declare a subarray on the stack */
+#define _awe_array_DECLARE_SUBARRAY(loc, subarray, ndimensions, array_ptr, slicers...) \
+    _awe_array_t _##subarray##_descriptor;                              \
+    _awe_array_t *subarray = &_##subarray##_descriptor;                 \
+                                                                        \
+    const int _##subarray##_ndimensions = (ndimensions);                \
+    _awe_array_bound_t _##subarray##_bounds[_##subarray##_ndimensions]; \
+    long _##subarray##_multipliers [_##subarray##_ndimensions];         \
+    _awe_array_slicer_t _##subarray##_slicers[] = {slicers};            \
+                                                                        \
+    _awe_subarray_initialize( (loc),                                    \
+                              (array_ptr),                              \
+                              subarray,                                 \
+                              _##subarray##_ndimensions,                \
+                              _##subarray##_slicers,                    \
+                              _##subarray##_bounds,                     \
+                              _##subarray##_multipliers )
+
+
+#define _awe_array_FILL(element_type, array, filler)                   \
+    for (int i = 0; i < array->nelements; ++i)                         \
+        ((element_type*)(array->element_data))[i] = (filler)
+
+#define _awe_array_FILL_WITH_SPACES(array)                              \
+    for (int i = 0; i < array->nelements * array->element_size; ++i)    \
+        ((char*)(array->element_data))[i] = ' '
 
 /* Statements. - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -364,6 +450,8 @@ int time_ (int n);
 
 /* Exceptional conditions. - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+extern const char * const _awe_class_0_exception;
+
 void _awe_init_exceptions (_awe_loc loc);
 
 void *exception( _awe_loc loc,    /* This is a RECORD structure, */
@@ -476,6 +564,13 @@ void _awe_read_string   (_awe_loc l, _awe_str s, int length);
 void _awe_read_char     (_awe_loc l, unsigned char *c);
 void _awe_readcard      (_awe_loc l, _awe_str string, int length);
 void _awe_readcard_char (_awe_loc l, unsigned char *c);
+
+
+/* Headers for user-supplied call tracing functions */
+
+void _awe_trace_procedure_called (_awe_loc call_loc, const char *procedure_name);
+void _awe_trace_procedure_entered (_awe_loc procedure_loc, const char *procedure_name);
+void _awe_trace_procedure_exited (_awe_loc call_loc, const char *procedure_name);
 
 
 #endif

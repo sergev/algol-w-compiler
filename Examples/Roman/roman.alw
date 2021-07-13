@@ -12,35 +12,35 @@ begin
         procedure append (string(1) value c);
             begin characters(length|1) := c; length := length + 1 end;
 
-            procedure i; append(case place of ("I","X","C","M"));
-            procedure v; append(case place of ("V","L","D"));
-            procedure x; append(case place of ("X","C","M"));
+        procedure i; append(case place of ("I","X","C","M"));
+        procedure v; append(case place of ("V","L","D"));
+        procedure x; append(case place of ("X","C","M"));
 
-            assert (number >= 1) and (number < 4000);
+        assert (number >= 1) and (number < 4000);
 
-            characters := "               ";  
-            length := 0;
-            power := 1000;  
-            place := 4;
-            while place > 0 do
-                begin
-                    case number div power + 1 of begin
-                        begin            end;
-                        begin i          end;
-                        begin i; i       end;
-                        begin i; i; i    end;
-                        begin i; v       end;
-                        begin v          end;
-                        begin v; i       end;
-                        begin v; i; i    end;
-                        begin v; i; i; i end;
-                        begin i; x       end
-                    end;
-                    number := number rem power;
-                    power := power div 10;
-                    place := place - 1
-                end
-        end roman;
+        characters := "               ";  
+        length := 0;
+        power := 1000;  
+        place := 4;
+        while place > 0 do
+           begin
+               case number div power + 1 of begin
+                   begin            end;
+                   begin i          end;
+                   begin i; i       end;
+                   begin i; i; i    end;
+                   begin i; v       end;
+                   begin v          end;
+                   begin v; i       end;
+                   begin v; i; i    end;
+                   begin v; i; i; i end;
+                   begin i; x       end
+               end;
+               number := number rem power;
+               power := power div 10;
+               place := place - 1
+            end
+    end roman;
 
     for i := 1 until argc - 1 do
     begin

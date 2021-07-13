@@ -74,6 +74,8 @@ name is the program name, followed by __.awe.h__.
     #include "__PROGRAM__.awe.h"
 }}}
 
+__awe.txt__ explains the C interface in more detail.
+
 ==EXAMPLES==
 
 The minimal Makefile looks like this:
@@ -112,7 +114,7 @@ followed by two colons for this to happen.
          diff expected.output actual.output
 
      clean::
-         rm -f parse.alw actual.output
+         rm -f actual.output
 
      include awe.mk
 }}}
@@ -129,13 +131,15 @@ Awe, GNU Make, tar, sed
 
 **awe**(1), **make**(1), **tar**(1)
 
+{{DOCDIR}}/awe.txt
+
 ==VERSION==
 
 {{VERSION}}
 
 ==AUTHOR==
 
-Copyright 2012 by Glyn Webster.
+Copyright 2017 by Glyn Webster.
 
 Awe is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License and Lesser GNU General 

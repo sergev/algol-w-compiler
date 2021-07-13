@@ -21,19 +21,20 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 
 type t
 
-val filenames : string DynArray.t  (* The names of all the source files, in the order they are encountered. *)
+val filename    : t -> string
+val file_number : t -> int
+val line        : t -> int
+val column      : t -> int
 
-val set_filename : string -> unit  (* appends a filename to 'filenames' *)
+val source_files : unit -> string list  (* The names of all the source files, in file_number order. *)
+
+val set_source : string -> unit  (* set a source file name as the one for error reports,
+                                    appends a new source file to list of sources in needed *)
 
 val create : string -> int -> int -> t  (* Create from source file, line number and column number. *)
 
 val of_position : Lexing.position -> t
 
 val to_string : t -> string  (* Convert to an Emacs-compatible source code location string *)
-
-val filename : t -> string
-val file_number : t -> int
-val line : t -> int
-val column : t -> int
 
 (* end *)

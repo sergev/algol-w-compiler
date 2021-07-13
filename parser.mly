@@ -57,7 +57,7 @@
 %type <Tree.t> block
 %type <Tree.t seq * Tree.t seq> block_body 
 %type <Tree.t seq> block_head
-%type <unit> block_end
+%type <Table.Id.t> block_end
 
 %type <Tree.t> expression
 %type <Tree.t seq> expression_list 
@@ -207,13 +207,13 @@ expression_list
 
 /* The bodies of blocks contain a mixture of expressions and labels. */
 block
-: block_body expression block_end       { Tree.BEGIN (pos 1, lst (fst $1), lst (snd $1 ++ $2)) }
-| block_body block_end                  { Tree.BEGIN (pos 1, lst (fst $1), lst (snd $1 ++ Tree.Empty (pos 2))) }
+: block_body expression block_end       { Tree.BEGIN (pos 1, lst (fst $1), lst (snd $1 ++ $2), $3) }
+| block_body block_end                  { Tree.BEGIN (pos 1, lst (fst $1), lst (snd $1 ++ Tree.Empty (pos 2)), $2) }
 ;
 
 block_end
-: END            {}
-| END Identifier {}
+: END            { Table.Id.dummy }
+| END Identifier { $2 }
 ;
 
 block_body

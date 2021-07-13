@@ -97,10 +97,10 @@ BEGIN BEGIN a END; b END
 BEGIN BEGIN a END; b END   
 
 BEGIN a; BEGIN b END blockb END blocka
-BEGIN a; BEGIN b END END
+BEGIN a; BEGIN b END blockb END blocka
 
 BEGIN BEGIN a END blocka; b END blockb
-BEGIN BEGIN a END; b END   
+BEGIN BEGIN a END blocka; b END blockb
 
 BEGIN INTEGER a; b END
 BEGIN INTEGER a; b END

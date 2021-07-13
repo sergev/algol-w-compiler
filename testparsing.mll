@@ -89,7 +89,7 @@ rule test entry_point error_count file_name line_number =
     in
     let error_count = List.fold_left 
       ( fun error_count file_name ->
-          Location.set_filename file_name ;
+          Location.set_source file_name;
           let chan = open_in file_name in
           let lexbuf = Lexing.from_channel chan in
           let error_count' = test entry_point error_count file_name 1 lexbuf in

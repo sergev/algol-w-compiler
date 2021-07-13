@@ -5,7 +5,6 @@
 #     sudo make install
 
 # Where the Awe files will be installed. Edit these to suit your system:
-# (DESTDIR is defined when packaging for Debian)
 
 PREFIX = $(DESTDIR)/usr/local
 BINDIR = $(PREFIX)/bin
@@ -27,6 +26,7 @@ default: test
 .PHONY: test
 .PHONY: manpages webpages
 .PHONY: clean
+.PHONY: zip
 
 # ------------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ CFLAGS += -DNO_GC
 endif
 
 HEADERS = awe.h aweio.h
-SOURCES = aweexcept.c  aweio.c awe.c awestd.c  awestr.c
+SOURCES = aweexcept.c aweio.c awe.c awestd.c awestr.c awearray.c
 
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 
@@ -81,7 +81,7 @@ $(OBJECTS) : $(HEADERS)
 aweio.o: aweio.c scanner.inc
 
 scanner.inc: scanner.py
-	python scanner.py
+	python2 scanner.py
 
 libawe.a: $(OBJECTS)
 	rm -f libawe.a
@@ -92,7 +92,7 @@ libawe.a: $(OBJECTS)
 # test everything
 
 test: clean build test-parsing test-suite test-programs test-examples webpages
-	echo "ALL TESTS PASSED"
+	@echo "ALL TESTS PASSED"
 
 TESTS = Tests/Separate \
 	Tests/SeparateC \
@@ -102,7 +102,8 @@ TESTS = Tests/Separate \
 	Tests/Argv-Multisource \
 	Tests/ExternalRecords \
 	Tests/Strings-as-bytes \
-	Tests/Tracing
+	Tests/Tracing \
+	Tests/Stderr-redirection
 
 EXAMPLES = Examples/*
 
@@ -130,13 +131,9 @@ test-examples:
 	make test -C Examples/List   -I $(shell pwd) COMPILER_PATH=$(shell pwd) || exit 1
 	make test -C Examples/Wumpus -I $(shell pwd) COMPILER_PATH=$(shell pwd) || exit 1
 	make test -C Examples/FreeingRecords -I $(shell pwd) COMPILER_PATH=$(shell pwd) || exit 1
-
-
-#
-# I'm not certain this works on 64-systems, so it is allowed to fail without halting the build.
-# It requires libgc.
+	make test -C Examples/Macro -I $(shell pwd) COMPILER_PATH=$(shell pwd) || exit 1
 ifndef NO_GC
-	make test -C Examples/test-cords -I $(shell pwd) COMPILER_PATH=$(shell pwd)
+	make test -C Examples/test-cords -I $(shell pwd) COMPILER_PATH=$(shell pwd) || exit 1
 endif
 
 
@@ -148,45 +145,28 @@ manpages: awe.1 awe.mk.7
 webpages: manpages awe.html awe.1.html awe.mk.7.html INSTALL.html
 
 awe.1 : man.py awe.1.src VERSION
-	python man.py awe.1.src awe.1 \
+	python2 man.py awe.1.src awe.1 \
                       VERSION="$(shell cat VERSION)" \
                       BINDIR="$(BINDIR)" LIBDIR="$(LIBDIR)" DOCDIR="$(DOCDIR)" INCDIR="$(INCDIR)"
 
 awe.mk.7 : man.py awe.mk.7.src VERSION
-	python man.py awe.mk.7.src awe.mk.7 VERSION="$(shell cat VERSION)" INCDIR="$(INCDIR)"
+	python2 man.py awe.mk.7.src awe.mk.7 \
+                      VERSION="$(shell cat VERSION)" \
+                      BINDIR="$(BINDIR)" LIBDIR="$(LIBDIR)" DOCDIR="$(DOCDIR)" INCDIR="$(INCDIR)"
 
 #
 
 awe.1.html: awe.1 htmltext.py
-	MANWIDTH=80 man ./awe.1 | python htmltext.py "awe(1): Awe ALGOL W compiler man page" > awe.1.html
+	MANWIDTH=80 man ./awe.1 | python2 htmltext.py "awe(1): Awe ALGOL W compiler man page" > awe.1.html
 
 awe.mk.7.html: awe.mk.7 htmltext.py
-	MANWIDTH=80 man ./awe.mk.7 | python htmltext.py "awe.mk(7): Awe ALGOL W Makefile man page" > awe.mk.7.html
+	MANWIDTH=80 man ./awe.mk.7 | python2 htmltext.py "awe.mk(7): Awe ALGOL W Makefile man page" > awe.mk.7.html
 
 awe.html: awe.txt htmltext.py
-	python htmltext.py "awe.txt: Awe ALGOL W compiler documentation file" < awe.txt > awe.html
+	python2 htmltext.py "awe.txt: Awe ALGOL W compiler documentation file" < awe.txt > awe.html
 
 INSTALL.html: INSTALL htmltext.py
-	python htmltext.py "INSTALL: Awe ALGOL W compiler installation instructions" < INSTALL > INSTALL.html
-
-
-# ------------------------------------------------------------------------------
-# Make a distribution tar file.
-
-# This has to be done in a directory under 'darcs' version control.
-# Otherwise, use tar on a cleaned copy of this directory.
-
-.PHONY: dist
-
-BRANCH=$(notdir $(PWD))
-
-dist: $(BRANCH).tar.gz
-
-$(BRANCH).tar.gz:
-	rm -f $(BRANCH).tar.gz
-	darcs dist --dist-name=$(BRANCH)
-
-# darcs setpref predist 'make test && make clean'
+	python2 htmltext.py "INSTALL: Awe ALGOL W compiler installation instructions" < INSTALL > INSTALL.html
 
 
 # ------------------------------------------------------------------------------
@@ -196,15 +176,23 @@ clean:
 	make -f Makefile.awe clean
 	for d in $(TESTS) ; do make clean -I $(shell pwd) -C $$d ; done
 	for d in $(EXAMPLES) ; do make clean -I $(shell pwd) -C $$d ; done
-	rm -f Tests/*.c 
+	rm -f Tests/*.awe.c 
 	rm -f scanner.inc scanner.dot
 	rm -f *.o *.a
 	rm -f awe
 	rm -f awe.1 awe.mk.7 awe.html awe.1.html awe.mk.7.html INSTALL.html
 	rm -f awe.tar.gz
 	rm -f testme testme-*
+	rm -f awe.zip awe.tar.gz
 
 # ------------------------------------------------------------------------------
+
+zip:
+	hg archive -t zip awe.zip
+	hg archive -t tgz awe.tar.gz
+
+# ------------------------------------------------------------------------------
+
 
 # This file is part of Awe. Copyright 2012 Glyn Webster.
 # 

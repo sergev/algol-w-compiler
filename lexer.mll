@@ -211,17 +211,15 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
       | WHILE -> "WHILE"
 
 
-  (* Debugging code can be added here, if necessary. *)
-
-  let return_token t = 
-     (* print_endline (token_to_string t) ; *)
-     t
+  (* A hook to allow lexer debugging code to be inserted, if necessary. *)
+  let return_token t = t
 }
 
 let integer_number = ['0'-'9']+
 let unscaled_real = integer_number '.' integer_number | '.' integer_number | integer_number '.'
 let exponent = ['+' '-']? integer_number
 let tenpower = '\''
+let space = [' ' '\t']
 
 let nl = '\n' | "\r\n" | "\n\r" | '\r'
 
@@ -231,8 +229,8 @@ let not_sign = '~' | '\172' | "\194\172" | ['N' 'n']['O' 'o']['T' 't']
 rule token = parse
 
 (* Whitespace *)
-| [' ' '\t'] { token lexbuf }
-| nl         { new_line lexbuf ; token lexbuf }
+| space+ { token lexbuf }
+| nl   { new_line lexbuf ; token lexbuf }
 
 (* AWE test code section marks. The program ends when one of these is encountered. *)
 | "----flags"
@@ -245,14 +243,28 @@ rule token = parse
 | "----end"
       { return_token EOF }
 
+(* C preprocessor linemarkers (non-standard) *)
+| space*
+  '#' space+
+  (['0'-'9']+ as line_digits) space+
+  '"' ([^ '\r' '\n' '"']+  as file_name) '"'
+  [^ '\r' '\n']*
+    { if file_name.[0] <> '<' || file_name = "<stdin>" then
+        begin
+          let line_number = int_of_string line_digits - 1 in
+          Location.set_source file_name;
+          lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_lnum = line_number }
+        end;
+      token lexbuf }
+    
 (* Symbols *)
 
-| ':' [' ' '\t']* '=' { return_token ASSIGN }
-| ':' [' ' '\t']* ':' { return_token COLONCOLON }
-| '*' [' ' '\t']* '*' { return_token STARSTAR }
-| not_sign [' ' '\t']* '=' { return_token NE }   
-| '<' [' ' '\t']* '=' { return_token LE }
-| '>' [' ' '\t']* '=' { return_token GE }
+| ':' space* '=' { return_token ASSIGN }
+| ':' space* ':' { return_token COLONCOLON }
+| '*' space* '*' { return_token STARSTAR }
+| not_sign space* '=' { return_token NE }   
+| '<' space* '=' { return_token LE }
+| '>' space* '=' { return_token GE }
 | not_sign { return_token NOT }
 | ')'     { return_token KET }
 | '('     { return_token BRA }
@@ -266,6 +278,7 @@ rule token = parse
 | ';'     { return_token SEMICOLON }
 | ':'     { return_token COLON }
 | '|'     { return_token BAR }
+| "//"    { return_token BAR }
 | '>'     { return_token GT }
 
 (* Numeric constant. *)    
@@ -290,7 +303,7 @@ rule token = parse
 
 (* Hexadecimal BITS constant. *)    
 | '#' (['0'-'9' 'A'-'F' 'a'-'f']+ as s)
-    { return_token (Bits (String.uppercase s)) }
+    { return_token (Bits (String.uppercase_ascii s)) }
 
 (* The start of a string constant. *)    
 | '"'  
@@ -411,7 +424,7 @@ and string_constant = parse
            if c >= ' ' && c <= '~' || c >= '\xA1' && c <= '\xFF' then (* Latin-1 printable *)
              ( string_add s ; string_constant lexbuf )
            else
-             error "This string contains a non-printing character code (is it UTF-8 encoded?)" !start_pos
+             error "This string contains a non-printing or non ISO 8859-1 character code" !start_pos
 }
 
 (* end *)

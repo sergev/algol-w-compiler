@@ -26,6 +26,7 @@ License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 #include "aweio.h"
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -400,24 +401,6 @@ void _awe_read_complex (_awe_loc loc, _Complex double *recipient)
 /* WRITE  -------------------------------------------------------------------------------- */
 
 
-static int  page_estimate;     /* The maximum number of pages that may be printed.
-                                  A page estimate of 0 means you don't expect to see any output. */
-
-static int  page_width;        /* The width of a page, in columns */
-static int  page_height;       /* The height of a page, in lines */
-
-static bool hard_page_breaks;  /* Whether there should be a page break every 60 lines.  */
-                               /* (In this library virtual page breaks happen anyway, */
-                               /* so this flag means "insert linefeed characters".)   */
-
-static bool pretty_page_breaks;  /* don't use linefeed characters, draw a page break of ~~~~~'s   */
-
-static bool strict_line_breaks; /* Do not allow over-long WRITE fields to overflow the line. */
-
-static bool trim_lines;         /* Do not print spaces at the ends of lines. */
-
-static bool eject_last_page;    /* Perform a page break at the end of the program. */
-
 
 /* The Editing Variables. See section 7.9.3. Note that these have special scoping rules.*/
 
@@ -454,6 +437,7 @@ _awe_Editing_restore (_awe_Editing_t* state)
 
 
 _awe_Printer _awe_stdout_printer;   /* Printer writing to the standard output */
+_awe_Printer _awe_stderr_printer;   /* Printer writing to the standard error stream */
 _awe_Printer *_awe_active_printer; /* The printer in use. */
 
 
@@ -465,6 +449,14 @@ _awe_Printer_initialize (_awe_Printer *printer, FILE *file)
   printer->column = 1;
   printer->true_column = 1;
   printer->page = 1;
+  printer->page_estimate      = _awe_env_int(NULL,  "AWE_PAGE_ESTIMATE",      INT_MAX,  0, INT_MAX);
+  printer->page_width         = _awe_env_int(NULL,  "AWE_PAGE_WIDTH",         132,      1, INT_MAX);
+  printer->page_height        = _awe_env_int(NULL,  "AWE_PAGE_HEIGHT",        60,       1, INT_MAX);
+  printer->hard_page_breaks   = _awe_env_bool(NULL, "AWE_HARD_PAGE_BREAKS",   false);
+  printer->pretty_page_breaks = _awe_env_bool(NULL, "AWE_PRETTY_PAGE_BREAKS", false);
+  printer->strict_line_breaks = _awe_env_bool(NULL, "AWE_STRICT_LINE_BREAKS", false);
+  printer->trim_lines         = _awe_env_bool(NULL, "AWE_TRIM_LINES",         true);
+  printer->eject_last_page    = _awe_env_bool(NULL, "AWE_EJECT_LAST_PAGE",    false);
 }
 
 
@@ -485,13 +477,13 @@ Printer_break_field (_awe_Printer *printer, _awe_loc loc, int field_width)
 
   /* printf("[%d - %d:%d]", field_width, printer->column, printer->true_column); */
 
-  if (page_estimate == 0) 
+  if (printer->page_estimate == 0) 
     _awe_error( loc, "The page estimate is 0 pages, nothing should be written.");
 
-  if (strict_line_breaks && field_width > page_width)
-    _awe_error( loc, "A WRITE field was too wide for the page here.\nThe page width is %d but the field width was %d.", page_width, field_width );
+  if (printer->strict_line_breaks && field_width > printer->page_width)
+    _awe_error( loc, "A WRITE field was too wide for the page here.\nThe page width is %d but the field width was %d.", printer->page_width, field_width );
 
-  if (printer->column + field_width - 1 > page_width) /* won't fit on line */
+  if (printer->column + field_width - 1 > printer->page_width) /* won't fit on line */
     Printer_line_break(_awe_active_printer, loc); 
 }
 
@@ -526,7 +518,7 @@ Printer_end_field (_awe_Printer *printer, _awe_loc loc, int field_width, int ful
   printer->column += full_field_width;
   printer->true_column += field_width;
   /* printf("{%d:%d - %d:%d}", field_width, full_field_width, printer->column, printer->true_column); */
-  if (printer->column > page_width + 1)  /* no more room on line */   /* XXX should this happen here? */
+  if (printer->column - 1 > printer->page_width)  /* no more room on line */   /* XXX should this happen here? */
       { /* printf("[*]"); */
     Printer_line_break(_awe_active_printer, loc); }
 }
@@ -540,7 +532,7 @@ Printer_really_line_break (_awe_Printer *printer, _awe_loc loc)
 {
   assert(printer->column >= 1);
 
-  if (printer->line == page_height) 
+  if (printer->line == printer->page_height) 
     Printer_page_break(printer, loc);
   else {
     /* start a new line */
@@ -575,30 +567,31 @@ Printer_page_break (_awe_Printer *printer, _awe_loc loc)
 {
   /* If the page height has been reached, and hard_page_breaks is on, then 
      replace the last line feed of the page with a form feed. */
-  assert(printer->line >= 1 && printer->line <= page_height);
-  while (printer->line < page_height) {
-    fputc('\n', printer->output);
-    ++printer->line;
-  }
-  if (hard_page_breaks || pretty_page_breaks)
-    if (pretty_page_breaks)
-      { 
-        int i;
+  assert(printer->line >= 1 && printer->line <= printer->page_height);
+  while (printer->line < printer->page_height) {
         fputc('\n', printer->output);
-        for (i = 0; i < page_width; ++i)
-          fputc('~', printer->output);
+      ++printer->line;
+   }
+    if (printer->hard_page_breaks || printer->pretty_page_breaks)
+        if (printer->pretty_page_breaks)
+            { 
+                int i;
+                fputc('\n', printer->output);
+                for (i = 0; i < printer->page_width; ++i)
+                    fputc('~', printer->output);
+                fputc('\n', printer->output);
+            }
+        else
+            fputc('\f', printer->output);
+    else 
         fputc('\n', printer->output);
-      }
+    printer->line = 1;
+    printer->column = 1;
+    printer->true_column = 1;
+    if (printer->page == printer->page_estimate) 
+        _awe_error( loc, "The page estimate, %d pages, has been reached.", printer->page_estimate);
     else
-      fputc('\f', printer->output);
-  else 
-    fputc('\n', printer->output);
-  printer->line = 1;
-  printer->column = 1;
-  printer->true_column = 1;
-  ++printer->page;
-  if (printer->page > page_estimate) 
-    _awe_error( loc, "The page estimate, %d pages, has been reached.", page_estimate);
+        ++printer->page;
 }
 
 
@@ -638,7 +631,7 @@ _awe_write_string (_awe_loc loc, _awe_str s, int length)
   int i, n;
 
   Printer_break_field(_awe_active_printer, loc, length);
-  n = trim_lines ? _awe_str_unpadded_length(s, length) : length;
+  n = _awe_active_printer->trim_lines ? _awe_str_unpadded_length(s, length) : length;
   if (n > 0) {
     Printer_tab_field(_awe_active_printer, loc);
     for (i = 0; i < n; ++i)
@@ -652,7 +645,7 @@ void
 _awe_write_char (_awe_loc loc, unsigned char c)
 {
   Printer_break_field(_awe_active_printer, loc, 1);
-  if (c == ' ' && trim_lines)
+  if (c == ' ' && _awe_active_printer->trim_lines)
     Printer_end_field(_awe_active_printer, loc, 0, 1);
   else {
     Printer_tab_field(_awe_active_printer, loc);
@@ -777,6 +770,7 @@ void
 _awe_iocontrol (_awe_loc loc, int code)
 {
   int parameter;
+  _awe_Printer *printer = _awe_active_printer;
 
   parameter = code % 10000;
 
@@ -786,37 +780,46 @@ _awe_iocontrol (_awe_loc loc, int code)
   case 0:
     switch (code) {
     case 1: Scanner_new_card(_awe_active_scanner, loc); break;
-    case 2: Printer_line_break(_awe_active_printer, loc); break;
-    case 3: Printer_page_break(_awe_active_printer, loc); break;
-    case 4: hard_page_breaks = false; break;
-    case 5: hard_page_breaks = true; break;
+    case 2: Printer_line_break(printer, loc); break;
+    case 3: Printer_page_break(printer, loc); break;
+    case 4: printer->hard_page_breaks = false; break;
+    case 5: printer->hard_page_breaks = true; break;
     default:
       _awe_error( loc, "IOCONTROL code %d is undefined.", code);
       break;
     }
     break;
 
-  /* Awe extended control codes */
-  case 1: page_width    = (parameter == 9999) ? 2147483647 : parameter; break;
-  case 2: page_height   = (parameter == 9999) ?          1 : parameter; break;
-  case 3: page_estimate = (parameter == 9999) ? 2147483647 : parameter; break;
+  /* Awe extended control codes. See awe.txt, INPUT/OUTPUT SYSTEM.  */
+  case 1: printer->page_width    = (parameter == 9999) ? 2147483647 : parameter; break;
+  case 2: printer->page_height   = (parameter == 9999) ?          1 : parameter; break;
+  case 3: printer->page_estimate = (parameter == 9999) ? 2147483647 : parameter; break;
   case 4:
     switch (parameter) {
-    case 1: _awe_active_printer->page = 1; _awe_active_printer->line = 1; break;
-    case 2: Printer_really_line_break(_awe_active_printer, loc); break;
-    case 4: pretty_page_breaks = false; break;
-    case 5: pretty_page_breaks = true; break;
-    case 6: strict_line_breaks = false; break;
-    case 7: strict_line_breaks = true; break;
-    case 8: trim_lines = false; break;
-    case 9: trim_lines = true; break;
-    case 10: eject_last_page = false; break;
-    case 11: eject_last_page = true; break;
+    case 1: printer->page = 1; printer->line = 1; break;
+    case 2: Printer_really_line_break(printer, loc); break;
+    case 4: printer->pretty_page_breaks = false; break;
+    case 5: printer->pretty_page_breaks = true; break;
+    case 6: printer->strict_line_breaks = false; break;
+    case 7: printer->strict_line_breaks = true; break;
+    case 8: printer->trim_lines = false; break;
+    case 9: printer->trim_lines = true; break;
+    case 10: printer->eject_last_page = false; break;
+    case 11: printer->eject_last_page = true; break;
     default:
-      _awe_error( loc, "IOCONTROL code %d is undefined.", code);
-      break;
+        _awe_error( loc, "IOCONTROL code %d is undefined.", code);
+        break;
     }
     break;
+    case 5:
+        switch (parameter) {
+        case 0: _awe_active_printer = &_awe_stdout_printer; break;
+        case 1: _awe_active_printer = &_awe_stderr_printer; break;
+        default:
+            _awe_error( loc, "IOCONTROL code %d is undefined.", code);
+            break;
+        }
+        break;
 
   default:
     _awe_error( loc, "IOCONTROL code %d is undefined.", code);
@@ -835,16 +838,8 @@ _awe_init_aweio (_awe_loc loc)
   _awe_active_scanner = &_awe_stdin_scanner;
 
   _awe_Printer_initialize(&_awe_stdout_printer, stdout);
+  _awe_Printer_initialize(&_awe_stderr_printer, stderr);
   _awe_active_printer = &_awe_stdout_printer;
-
-  page_estimate      = _awe_env_int  (loc, "AWE_PAGE_ESTIMATE",      INT_MAX, 0, INT_MAX);
-  page_width         = _awe_env_int  (loc, "AWE_PAGE_WIDTH",         132,      1, INT_MAX);
-  page_height        = _awe_env_int  (loc, "AWE_PAGE_HEIGHT",        60,       1, INT_MAX);
-  hard_page_breaks   = _awe_env_bool (loc, "AWE_HARD_PAGE_BREAKS",   false);
-  pretty_page_breaks = _awe_env_bool (loc, "AWE_PRETTY_PAGE_BREAKS", false);
-  strict_line_breaks = _awe_env_bool (loc, "AWE_STRICT_LINE_BREAKS", false);
-  trim_lines         = _awe_env_bool (loc, "AWE_TRIM_LINES",         true);
-  eject_last_page    = _awe_env_bool (loc, "AWE_EJECT_LAST_PAGE",    false);
 
   i_w = 14;
   s_w = 2;
@@ -857,7 +852,7 @@ _awe_init_aweio (_awe_loc loc)
 void
 _awe_Printer_finalize (_awe_loc loc, _awe_Printer *printer)
 {
-    if (eject_last_page)
+    if (printer->eject_last_page)
         Printer_page_break(printer, loc);  
     else
         Printer_line_break(printer, loc);  
@@ -867,7 +862,8 @@ _awe_Printer_finalize (_awe_loc loc, _awe_Printer *printer)
 void
 _awe_exit_aweio (_awe_loc loc)
 {
-    _awe_Printer_finalize(loc, _awe_active_printer);
+    _awe_Printer_finalize(loc, &_awe_stdout_printer);
+    _awe_Printer_finalize(loc, &_awe_stderr_printer);
 }
 
 

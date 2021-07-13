@@ -15,6 +15,7 @@ It allows Algol W programs to be linked to C object code.
 Installion instructions are in the file INSTALL.
 
 The manuals are in the file awe.txt and man pages awe.1 and awe.mk.7.
+You will also require a copy of the Algol W Language Description.
 
 
 Copyright

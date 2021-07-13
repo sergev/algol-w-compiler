@@ -29,7 +29,7 @@ let initial_size = 20
 
 let create filler =
   { length = 0;
-    arr = Array.create initial_size filler;
+    arr = Array.make initial_size filler;
     filler = filler }
 
 let get a i  =  Array.get a.arr i
@@ -37,16 +37,16 @@ let get a i  =  Array.get a.arr i
 let add a element =
   let len = Array.length a.arr in
   if len = a.length then
-    a.arr <- Array.append a.arr (Array.create len a.filler) ; (* double the array length *)
+    a.arr <- Array.append a.arr (Array.make len a.filler) ; (* double the array length *)
   Array.set a.arr a.length element ;
   a.length <- a.length + 1
 
 let length a = a.length
 
-let map_to_list (a : 'a t) (f : int -> 'a -> 'b) : 'b list =
+let to_list (a : 'a t) : 'a list =
   let xs = ref [] in
   for i = a.length - 1 downto 0 do
-    xs := (f i a.arr.(i)) :: !xs
+    xs := a.arr.(i) :: !xs
   done ;
   !xs
 
