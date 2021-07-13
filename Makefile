@@ -32,20 +32,20 @@ default: test
 
 install:
 	install -m 755 -d $(BINDIR) $(LIBDIR) $(INCDIR) $(DOCDIR) $(MANDIR1) $(MANDIR7)
-	install -m 755 -t $(BINDIR) awe
-	install -m 644 -t $(INCDIR) awe.h
-	install -m 644 -t $(INCDIR) aweio.h
-	install -m 644 -t $(LIBDIR) libawe.a 
-	install -m 644 -t $(INCDIR) awe.mk
-	install -m 644 -t $(DOCDIR) awe.txt
-	install -m 644 -t $(MANDIR1) awe.1
-	install -m 644 -t $(MANDIR7) awe.mk.7
+	install -m 755 awe $(BINDIR)
+	install -m 644 awe.h $(INCDIR)
+	install -m 644 aweio.h $(INCDIR)
+	install -m 644 libawe.a $(LIBDIR)
+	install -m 644 awe.mk $(INCDIR)
+	install -m 644 awe.txt $(DOCDIR)
+	install -m 644 awe.1 $(MANDIR1)
+	install -m 644 awe.mk.7 $(MANDIR7)
 
 uninstall:
-	rm -f $(BINDIR)/awe 
-	rm -f $(LIBDIR)/libawe.a 
-	rm -f $(INCDIR)/awe.h 
-	rm -f $(INCDIR)/aweio.h 
+	rm -f $(BINDIR)/awe
+	rm -f $(LIBDIR)/libawe.a
+	rm -f $(INCDIR)/awe.h
+	rm -f $(INCDIR)/aweio.h
 	rm -f $(INCDIR)/awe.mk
 	rm -f $(MANDIR1)/awe.1
 	rm -f $(MANDIR7)/awe.mk.7
@@ -65,7 +65,7 @@ awe:
 # ------------------------------------------------------------------------------
 # Build libawe.a
 
-ifeq ($(shell uname -o),Cygwin)
+ifeq ($(shell uname),Cygwin)
 $(warning "Compiling a runtime library that does not use libgc. See readme-libgc.txt.")
 NO_GC=1
 CFLAGS += -DNO_GC
@@ -111,10 +111,10 @@ EXAMPLES = Examples/*
 
 test-parsing:
 	make -f Makefile.testparsing
-	./testparsing --test expressions  Tests/parser-lexing*.dat 
-	./testparsing --test expressions  Tests/parser-expressions*.dat 
-	./testparsing --test expressions  Tests/parser-statements*.dat 
-	./testparsing --test declarations Tests/parser-declarations*.dat 
+	./testparsing --test expressions  Tests/parser-lexing*.dat
+	./testparsing --test expressions  Tests/parser-expressions*.dat
+	./testparsing --test expressions  Tests/parser-statements*.dat
+	./testparsing --test declarations Tests/parser-declarations*.dat
 
 test-suite:
 	ocaml ./testprograms.ml -h Tests/*.alw
@@ -176,7 +176,7 @@ clean:
 	make -f Makefile.awe clean
 	for d in $(TESTS) ; do make clean -I $(shell pwd) -C $$d ; done
 	for d in $(EXAMPLES) ; do make clean -I $(shell pwd) -C $$d ; done
-	rm -f Tests/*.awe.c 
+	rm -f Tests/*.awe.c
 	rm -f scanner.inc scanner.dot
 	rm -f *.o *.a
 	rm -f awe
@@ -195,17 +195,17 @@ zip:
 
 
 # This file is part of Awe. Copyright 2012 Glyn Webster.
-# 
+#
 # Awe is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Awe is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public
 # License along with Awe.  If not, see <http://www.gnu.org/licenses/>.
 

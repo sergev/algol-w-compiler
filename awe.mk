@@ -6,14 +6,15 @@
 #currently work with Awe, it issues warnings and corrupts memory, so
 #'libawe.a' does not link to 'libgc' on Cygwin. See README-Cygwin.
 #
-ifeq ($(shell uname -o),Cygwin)
+ifeq ($(shell uname),Cygwin)
 $(warning "This is Cygwin, so not linking your program to 'libgc'.")
 LDLIBS += -lawe -lm
 else
-LDLIBS += -lawe -lm -lgc
+LDLIBS += -L/usr/local/lib -lawe -lm -lgc
 endif
 
 
+CFLAGS += -I/usr/local/include
 ifdef COMPILER_PATH
 CFLAGS += -I$(COMPILER_PATH) -L$(COMPILER_PATH)
 AWE=$(COMPILER_PATH)/awe
@@ -25,13 +26,13 @@ ifndef DISTNAME
 DISTNAME = $(shell basename `pwd`)
 endif
 
-.PHONY: default build clean test dist 
+.PHONY: default build clean test dist
 
 # default rule:
-build: Makefile $(PROGRAM) 
+build: Makefile $(PROGRAM)
 
 $(PROGRAM) : $(PROGRAM).awe.c $(PROGRAM).awe.h $(C_SOURCES) $(C_INCLUDES)
-	gcc $(CFLAGS) $(C_SOURCES) $(PROGRAM).awe.c $(LDLIBS) -o $(PROGRAM)
+	gcc-11 $(CFLAGS) $(C_SOURCES) $(PROGRAM).awe.c $(LDLIBS) -o $(PROGRAM)
 
 $(PROGRAM).awe.c $(PROGRAM).awe.h : $(ALGOLW_SOURCES)
 	$(AWE) $(AWE_FLAGS) $(ALGOLW_SOURCES) -c $(PROGRAM).awe.c > $(PROGRAM).awe.h

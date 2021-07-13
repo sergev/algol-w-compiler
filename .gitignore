@@ -40,5 +40,6 @@
 /Examples/List/list
 /Examples/Macro/macro
 /Examples/Roman/roman
+/Examples/Wumpus/wumpus
 /Examples/test-cords/test-cords
-testme-*
+testme*

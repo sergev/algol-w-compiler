@@ -1,4 +1,4 @@
-(* testprograms.ml -- script to run the many little programs in AWE test suite. 
+(* testprograms.ml -- script to run the many little programs in AWE test suite.
 
 --
 
@@ -27,7 +27,7 @@ let nfails = ref 0 ;;
 let halt_on_error = ref false ;;
 
 let strip_right s =
-  let rec loop i = 
+  let rec loop i =
     if i = -1 then ""
     else if String.contains " \t\n\r" s.[i] then loop (i - 1)
     else String.sub s 0 (i + 1)
@@ -37,7 +37,7 @@ let strip_right s =
 
 let strip_left s =
   let n = String.length s in
-  let rec loop i = 
+  let rec loop i =
     if i = n then s
     else if String.contains " \t\n\r" s.[i] then loop (i + 1)
     else String.sub s i (n - i)
@@ -51,26 +51,26 @@ let starts_with this s =
   let ns = String.length s in
   let nt = String.length this in
   nt <= ns && String.sub s 0 nt = this
-;;  
+;;
 
 
 let read_whole_file filename =
   if Sys.file_exists filename then
     let chan = open_in filename in
-    let lines = ref [] in 
+    let lines = ref [] in
     ( try
         while true do
           lines := (strip_right (input_line chan) ^ "\n") :: !lines
         done
       with End_of_file ->
-        close_in chan 
+        close_in chan
     );
     let s = String.concat "" (List.rev !lines) in
     if s <> "" && s.[String.length s - 1] <> '\n' then
       s ^ "\n"
     else
       s
-  else 
+  else
     ""
 ;;
 
@@ -93,7 +93,7 @@ let input_test chan =
   let text = Buffer.create 1024 in
   let eatlines eof_okay =
     Buffer.clear text;
-    try 
+    try
       line := strip_right (input_line chan);
       incr linenum;
       while not (starts_with "----" !line) do
@@ -128,7 +128,7 @@ let input_test chan =
       if not (starts_with "----end" !line) then raise (Syntax_error !linenum);
     end;
   (!awe_flags, !awe_compile, !awe_messages, !awe_stdin, !awe_stdout, !awe_stderr, !awe_exitcode)
-;;  
+;;
 
 let run_commands cs =
   let rec loop =
@@ -146,14 +146,14 @@ let run_commands cs =
 let run_test filename awe_flags awe_compile awe_messages awe_stdin awe_stdout awe_stderr awe_exitcode =
   print_endline filename;
   let s = String.sub filename 0 (String.index filename '.') in
-  let compilation_exitcode = 
+  let compilation_exitcode =
     run_commands
       [ "rm -f testme testme-compile testme-messages testme-stderr testme-stdin testme-stdout";
         sprintf "./awe %s %s.alw -c %s.awe.c 1>testme-messages 2>testme-compile" awe_flags s s;
-        sprintf "gcc -I. -L. '%s.awe.c' -lawe -lgc -lm -o testme 2>>testme-compile" s ]
+        sprintf "gcc-11 -I. -L. '%s.awe.c' -L/usr/local/lib -lawe -lgc -lm -o testme 2>>testme-compile" s ]
   in
   let () = write_whole_file "testme-stdin" awe_stdin in
-  let awe_exitcode' = 
+  let awe_exitcode' =
     if compilation_exitcode = 0 then
       Sys.command "./testme <testme-stdin >testme-stdout 2>testme-stderr"
     else
@@ -163,11 +163,11 @@ let run_test filename awe_flags awe_compile awe_messages awe_stdin awe_stdout aw
   let awe_messages' = read_whole_file "testme-messages" in
   let awe_stderr'  = read_whole_file "testme-stderr"  in
   let awe_stdout'  = read_whole_file "testme-stdout"  in
-  if awe_compile' <> awe_compile || 
-    awe_stderr'   <> awe_stderr  || 
-    awe_messages' <> awe_messages  || 
+  if awe_compile' <> awe_compile ||
+    awe_stderr'   <> awe_stderr  ||
+    awe_messages' <> awe_messages  ||
     awe_stdout'   <> awe_stdout  ||
-    awe_exitcode' <> awe_exitcode 
+    awe_exitcode' <> awe_exitcode
   then
     begin
       if awe_compile' <> awe_compile then
@@ -187,14 +187,14 @@ let run_test filename awe_flags awe_compile awe_messages awe_stdin awe_stdout aw
 
 let test_file filename =
   let chan = open_in filename in
-  let flags, compile, messages, stdin, stdout, stderr, exitcode = 
-    try 
+  let flags, compile, messages, stdin, stdout, stderr, exitcode =
+    try
       input_test chan
     with Syntax_error linenum ->
       begin
         close_in chan ;
         fprintf stderr "File %S, line %i: test file syntax error\n" filename linenum ;
-        exit 1 
+        exit 1
       end
   in
   close_in chan ;
