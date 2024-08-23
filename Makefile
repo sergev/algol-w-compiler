@@ -81,7 +81,7 @@ $(OBJECTS) : $(HEADERS)
 aweio.o: aweio.c scanner.inc
 
 scanner.inc: scanner.py
-	python2 scanner.py
+	python3 scanner.py
 
 libawe.a: $(OBJECTS)
 	rm -f libawe.a

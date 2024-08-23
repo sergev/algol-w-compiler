@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 ''' scanner.py -- generates a state machine scanner for the Algol W READ statement
 
@@ -50,7 +50,7 @@ d  case '0' ... '9':          //parts of numbers
 e  case '\'': case 'e': case 'E':
                               //hexadecimal for BITS
 #  case '#':
-h  case '0' ... '9': case 'A' ... 'F': case 'a' ... 'f': 
+h  case '0' ... '9': case 'A' ... 'F': case 'a' ... 'f':
 
                               //strings of printable ISO-8559-1 characters
 "  case '"':
@@ -72,7 +72,7 @@ E  case 'E': case 'e':
 # The state machine:  current state, current character, next state, action.
 #
 # See aweio.c for the meanings of the Scanner_* actions.
-# (Basically, they are filling a buffer with the C versions of 
+# (Basically, they are filling a buffer with the C versions of
 # the Algol W constants which will be scanned with 'strtol' and friends.)
 
 default_action = 'Scanner_addchar(scanner, c);'
@@ -87,7 +87,7 @@ transition_data = r'''
   0  +  100  Scanner_start(scanner); Scanner_addchar(scanner, c);
 
   0  "  301  Scanner_start(scanner);                   //These enter string, bits, and TRUE/FALSE constant states.
-  0  #  401  Scanner_start(scanner); 
+  0  #  401  Scanner_start(scanner);
   0  T  501  Scanner_start(scanner); Scanner_addchar(scanner, c);
   0  F  601  Scanner_start(scanner); Scanner_addchar(scanner, c);
 
@@ -98,7 +98,7 @@ transition_data = r'''
 
 // Numbers: integer, real, or imaginary.
 // Algol W lets a ridiculous number of real constant parts be optional.
-// An integer or real terminated with a sign rather than a space is the 
+// An integer or real terminated with a sign rather than a space is the
 // real part of a complex number, the imaginary part will follow (state 200).
 
 100  .  107  Scanner_addstring(scanner, "0.");
@@ -161,7 +161,7 @@ transition_data = r'''
 301  c  301
 301  "  302  ;
 302  "  301  Scanner_addstring(scanner, "\"\"");
-302  w    0  Scanner_close_buffer(scanner); return String; 
+302  w    0  Scanner_close_buffer(scanner); return String;
 
 // Bits, in hexadecimal.
 
@@ -211,7 +211,7 @@ f.write(c_code)
 f.close()
 
 # Output a "dot file" that can be used to visualize the state machine with GraphViz.
-def escape(s): return s.decode('string_escape').replace('"', '\\"')
+def escape(s): return s.encode('utf-8').decode('unicode-escape').replace('"', '\\"')
 f = open("scanner.dot", 'w')
 f.write('digraph state_machine { rankdir=LR; node [shape = circle];\n')
 for state in sorted(transitions.keys()):

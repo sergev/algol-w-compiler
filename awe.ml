@@ -121,8 +121,8 @@ let compile (sources : string list) (operation : operation_t) (target : string) 
   | Compile ->
       let target_c = target ^ ".awe.c" in
       output_code target_c code ;
-      let libs = "-lawe -lm" ^ (if no_gc then "" else " -lgc")  in
-      let run_gcc = sprintf "gcc-11 %s %s -o %s" (Filename.quote target_c) libs (Filename.quote target) in
+      let libs = "-L/usr/local/lib -lawe -lm" ^ (if no_gc then "" else " -lgc")  in
+      let run_gcc = sprintf "gcc-14 -I/usr/local/include %s %s -o %s" (Filename.quote target_c) libs (Filename.quote target) in
       let exitcode = Sys.command run_gcc in
       if exitcode = 0 then
         Sys.remove target_c
